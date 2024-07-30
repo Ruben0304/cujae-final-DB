@@ -5,12 +5,14 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ExposedDropdownMenuDefaults
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,12 +22,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import dao.PatientDAO
 import kotlinx.coroutines.launch
 import modelos.Patient
-import modelos.Entities
+import vistas.FilterDropdown
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview
@@ -38,10 +40,21 @@ fun PatientListContent() {
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
 
+    var selectedHospital by remember { mutableStateOf<Int?>(null) }
+    var selectedDepartamento by remember { mutableStateOf<Int?>(null) }
+    var selectedUnidad by remember { mutableStateOf<Int?>(null) }
+
     // Cargar los datos iniciales
-    LaunchedEffect(Unit) {
+    LaunchedEffect(selectedHospital, selectedDepartamento, selectedUnidad) {
         isLoading = true
-        loadMorePatients(currentPage, patients) { newPatients, hasMore ->
+        currentPage = 0
+        loadMorePatients(
+            currentPage,
+            selectedHospital,
+            selectedDepartamento,
+            selectedUnidad,
+            emptyList()
+        ) { newPatients, hasMore ->
             patients = newPatients
             hasMoreData = hasMore
             isLoading = false
@@ -56,7 +69,13 @@ fun PatientListContent() {
                     coroutineScope.launch {
                         isLoading = true
                         currentPage++
-                        loadMorePatients(currentPage, patients) { newPatients, hasMore ->
+                        loadMorePatients(
+                            currentPage,
+                            selectedHospital,
+                            selectedDepartamento,
+                            selectedUnidad,
+                            patients
+                        ) { newPatients, hasMore ->
                             patients = newPatients
                             hasMoreData = hasMore
                             isLoading = false
@@ -76,7 +95,13 @@ fun PatientListContent() {
 
     MaterialTheme(colorScheme = darkColorScheme) {
         Scaffold(
-            topBar = { PatientHeader() },
+            topBar = {
+                PatientHeader(
+                    onHospitalSelected = { selectedHospital = it },
+                    onDepartamentoSelected = { selectedDepartamento = it },
+                    onUnidadSelected = { selectedUnidad = it }
+                )
+            },
             containerColor = MaterialTheme.colorScheme.background
         ) { paddingValues ->
             LazyColumn(
@@ -87,7 +112,7 @@ fun PatientListContent() {
                     .fillMaxSize()
                     .padding(horizontal = 16.dp)
             ) {
-                items(patients.sortedBy { it.name }) { patient ->
+                items(patients.sortedBy { "${it.nombre} ${it.apellidos}" }) { patient ->
                     PatientItem(patient)
                 }
 
@@ -110,30 +135,128 @@ fun PatientListContent() {
 
 suspend fun loadMorePatients(
     page: Int,
+    hospitalId: Int?,
+    departamentoId: Int?,
+    unidadId: Int?,
     currentPatients: List<Patient>,
     callback: (List<Patient>, Boolean) -> Unit
 ) {
-    val newPatients = Entities.getPatients(page * PAGE_SIZE, PAGE_SIZE)
+    val newPatients = PatientDAO.getFilteredPatients(
+        hospitalId = hospitalId, // Asume que siempre hay un hospital seleccionado
+        departamentoId = departamentoId,
+        unidadId = unidadId,
+        offset = page * PAGE_SIZE,
+        limit = PAGE_SIZE
+    )
     val updatedPatients = currentPatients + newPatients
     callback(updatedPatients, newPatients.size == PAGE_SIZE)
 }
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PatientHeader() {
-    TopAppBar(
-        title = {
-            Text(
-                "Listado de Pacientes",
-                style = MaterialTheme.typography.titleLarge
+fun PatientHeader(
+    onHospitalSelected: (Int) -> Unit,
+    onDepartamentoSelected: (Int?) -> Unit,
+    onUnidadSelected: (Int?) -> Unit
+) {
+    var selectedHospital by remember { mutableStateOf<Int?>(null) }
+    var selectedDepartamento by remember { mutableStateOf<Int?>(null) }
+    var selectedUnidad by remember { mutableStateOf<Int?>(null) }
+
+    val hospitals = listOf(1, 2, 3) // Reemplaza con tus datos reales
+    val departamentos = listOf(1, 2, 3) // Reemplaza con tus datos reales
+    val unidades = listOf(1, 2, 3) // Reemplaza con tus datos reales
+
+    Column {
+        TopAppBar(
+            title = {
+                Text(
+                    "Listado de Pacientes",
+                    style = MaterialTheme.typography.titleLarge
+                )
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.background,
+                titleContentColor = MaterialTheme.colorScheme.onBackground
             )
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.background,
-            titleContentColor = MaterialTheme.colorScheme.onBackground
         )
-    )
+
+        // Hospital Dropdown
+        FilterDropdown(
+            label = "Hospital",
+            options = hospitals,
+            selectedOption = selectedHospital,
+            onOptionSelected = {
+                selectedHospital = it
+                onHospitalSelected(it)
+                selectedDepartamento = null
+                selectedUnidad = null
+                onDepartamentoSelected(null)
+                onUnidadSelected(null)
+            }
+        )
+
+        // Departamento Dropdown
+        FilterDropdown(
+            label = "Departamento",
+            options = departamentos,
+            selectedOption = selectedDepartamento,
+            onOptionSelected = {
+                selectedDepartamento = it
+                onDepartamentoSelected(it)
+                selectedUnidad = null
+                onUnidadSelected(null)
+            },
+            enabled = selectedHospital != null
+        )
+
+        // Unidad Dropdown
+        FilterDropdown(
+            label = "Unidad",
+            options = unidades,
+            selectedOption = selectedUnidad,
+            onOptionSelected = {
+                selectedUnidad = it
+                onUnidadSelected(it)
+            },
+            enabled = selectedDepartamento != null
+        )
+    }
+}
+
+@Composable
+fun PatientDetails(patient: Patient) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        PatientDetailItem(Icons.Rounded.Badge, "Número de Historia Clínica", patient.numeroHistoriaClinica)
+        PatientDetailItem(Icons.Rounded.Cake, "Fecha de Nacimiento", patient.fechaNacimiento)
+        PatientDetailItem(Icons.Rounded.Home, "Dirección", patient.direccion)
+        PatientDetailItem(Icons.Rounded.DepartureBoard, "Departamento", patient.departamentoNombre)
+        PatientDetailItem(Icons.Rounded.Group, "Unidad", patient.unidadNombre)
+    }
+}
+@Composable
+fun PatientDetailItem(icon: ImageVector, label: String, value: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            imageVector = icon,
+            contentDescription = label,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Column {
+            Text(
+                label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            )
+            Text(
+                value,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -167,12 +290,12 @@ fun PatientItem(patient: Patient) {
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        "${patient.name} ${patient.lastName}",
+                        "${patient.nombre} ${patient.apellidos}",
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        "ID: ${patient.clinicalRecordNumber}",
+                        "ID: ${patient.numeroHistoriaClinica}",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -187,43 +310,6 @@ fun PatientItem(patient: Patient) {
                 Spacer(modifier = Modifier.height(16.dp))
                 PatientDetails(patient)
             }
-        }
-    }
-}
-
-@Composable
-fun PatientDetails(patient: Patient) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        PatientDetailItem(Icons.Rounded.LocalHospital, "Hospital", patient.hospitalName)
-        PatientDetailItem(Icons.Rounded.Business, "Departamento", patient.departmentName)
-        PatientDetailItem(Icons.Rounded.Group, "Unidad", patient.unitName)
-        PatientDetailItem(Icons.Rounded.Badge, "Número de Historia Clínica", patient.clinicalRecordNumber)
-        PatientDetailItem(Icons.Rounded.Cake, "Fecha de Nacimiento", patient.birthDate)
-        PatientDetailItem(Icons.Rounded.Home, "Dirección", patient.address ?: "N/A")
-    }
-}
-
-@Composable
-fun PatientDetailItem(icon: ImageVector, label: String, value: String) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(
-            imageVector = icon,
-            contentDescription = label,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(20.dp)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Column {
-            Text(
-                label,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-            )
-            Text(
-                value,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
         }
     }
 }

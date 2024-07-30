@@ -25,7 +25,11 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
     implementation(compose.materialIconsExtended)
     implementation(compose.material3)
-    runtimeOnly("io.insert-koin:koin-core:4.0.0-RC1")
+
+
+
+
+
 
 
 }

@@ -23,9 +23,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import dao.HospitalDAO
 import kotlinx.coroutines.launch
 import modelos.Hospital
-import modelos.Entities
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview
@@ -87,7 +87,7 @@ fun HospitalListContent() {
                     .fillMaxSize()
                     .padding(horizontal = 16.dp)
             ) {
-                items(hospitals.sortedBy { it.name }) { hospital ->
+                items(hospitals.sortedBy { it.nombre }) { hospital ->
                     HospitalItem(hospital)
                 }
 
@@ -113,7 +113,7 @@ suspend fun loadMoreHospitals(
     currentHospitals: List<Hospital>,
     callback: (List<Hospital>, Boolean) -> Unit
 ) {
-    val newHospitals = Entities.getHospitals(page * PAGE_SIZE, PAGE_SIZE)
+    val newHospitals = HospitalDAO.getAllHospitals()
     val updatedHospitals = currentHospitals + newHospitals
     callback(updatedHospitals, newHospitals.size == PAGE_SIZE)
 }
@@ -168,7 +168,7 @@ fun HospitalItem(hospital: Hospital) {
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        hospital.name,
+                        hospital.nombre,
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -195,7 +195,7 @@ fun HospitalItem(hospital: Hospital) {
 @Composable
 fun HospitalDetails(hospital: Hospital) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        HospitalDetailItem(Icons.Rounded.Details, "Nombre", hospital.name)
+        HospitalDetailItem(Icons.Rounded.Details, "Nombre", hospital.nombre)
 //        HospitalDetailItem(Icons.Rounded.Phone, "Teléfono", hospital.phone ?: "N/A")
 //        HospitalDetailItem(Icons.Rounded.Email, "Email", hospital.email ?: "N/A")
 //        HospitalDetailItem(Icons.Rounded.Group, "Departamentos", hospital.departments.toString())
