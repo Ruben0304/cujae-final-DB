@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.*
 import vistas.DashboardApp
+import vistas.MacOSTitleBar
 import kotlin.system.exitProcess
 
 fun main() = application {
@@ -34,84 +35,6 @@ fun main() = application {
         Column {
             MacOSTitleBar(windowState)
             DashboardApp()
-        }
-    }
-}
-
-@Composable
-fun MacOSTitleBar(windowState: WindowState) {
-    val density = LocalDensity.current
-    var isDragging by remember { mutableStateOf(false) }
-    var startPosition by remember { mutableStateOf(WindowPosition.Absolute(0.dp, 0.dp)) }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(30.dp)
-            .background(Color(0xFF2D2D2D))
-            .pointerInput(Unit) {
-                detectDragGestures(
-                    onDragStart = {
-                        isDragging = true
-                        startPosition = windowState.position as WindowPosition.Absolute
-                    },
-                    onDragEnd = { isDragging = false },
-                    onDrag = { change, dragAmount ->
-                        change.consume()
-                        if (isDragging) {
-                            val currentPosition = windowState.position
-                            windowState.position = WindowPosition.Absolute(
-                                x = currentPosition.x + dragAmount.x.toDp(),
-                                y = currentPosition.y + dragAmount.y.toDp()
-                            )
-                        }
-                    }
-                )
-            },
-        horizontalArrangement = Arrangement.End,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        MacOSWindowButton(
-            color = Color(0xFFFF5F57),
-            onClick = { exitProcess(0) }
-        )
-        MacOSWindowButton(
-            color = Color(0xFFFFBD2E),
-            onClick = { windowState.isMinimized = true }
-        )
-        MacOSWindowButton(
-            color = Color(0xFF28C940),
-            onClick = {
-                windowState.placement = if (windowState.placement == WindowPlacement.Maximized)
-                    WindowPlacement.Floating
-                else
-                    WindowPlacement.Maximized
-            }
-        )
-        Spacer(Modifier.width(16.dp))
-    }
-}
-
-@Composable
-fun MacOSWindowButton(color: Color, onClick: () -> Unit) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isHovered by interactionSource.collectIsHoveredAsState()
-
-    Box(
-        modifier = Modifier
-            .padding(horizontal = 4.dp)
-            .size(12.dp)
-            .clip(CircleShape)
-            .background(color.copy(alpha = if (isHovered) 1f else 0.8f))
-            .hoverable(interactionSource)
-            .clickable(onClick = onClick)
-    ) {
-        if (isHovered) {
-            when (color) {
-                Color(0xFFFF5F57) -> Text("×", color = Color.Black, fontSize = 10.sp, modifier = Modifier.align(Alignment.Center))
-                Color(0xFFFFBD2E) -> Text("−", color = Color.Black, fontSize = 10.sp, modifier = Modifier.align(Alignment.Center))
-                Color(0xFF28C940) -> Text("+", color = Color.Black, fontSize = 10.sp, modifier = Modifier.align(Alignment.Center))
-            }
         }
     }
 }
