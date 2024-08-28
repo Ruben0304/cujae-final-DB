@@ -1,315 +1,151 @@
-import androidx.compose.animation.*
-import androidx.compose.animation.core.*
-import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ExposedDropdownMenuDefaults
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import dao.PatientDAO
+import androidx.compose.ui.zIndex
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import modelos.Patient
-import vistas.FilterDropdown
+import vistas.util.Colores
+import vistas.componentes.InfoItem
+import vistas.componentes.RotatingCard
+import vistas.componentes.SelectInputFieldFiltrado
 
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview
 @Composable
 fun PatientListContent() {
-    var patients by remember { mutableStateOf(listOf<Patient>()) }
-    var isLoading by remember { mutableStateOf(false) }
-    var currentPage by remember { mutableStateOf(0) }
-    var hasMoreData by remember { mutableStateOf(true) }
-    val listState = rememberLazyListState()
+    var pacientes by remember { mutableStateOf(listOf<Patient>()) }
+    var isLoading by remember { mutableStateOf(true) }
+    var selectedHospital by remember { mutableStateOf<String?>(null) }
+    var selectedDepartamento by remember { mutableStateOf<String?>(null) }
+    var selectedUnidad by remember { mutableStateOf<String?>(null) }
+
     val coroutineScope = rememberCoroutineScope()
 
-    var selectedHospital by remember { mutableStateOf<Int?>(null) }
-    var selectedDepartamento by remember { mutableStateOf<Int?>(null) }
-    var selectedUnidad by remember { mutableStateOf<Int?>(null) }
-
-    // Cargar los datos iniciales
-    LaunchedEffect(selectedHospital, selectedDepartamento, selectedUnidad) {
-        isLoading = true
-        currentPage = 0
-        loadMorePatients(
-            currentPage,
-            selectedHospital,
-            selectedDepartamento,
-            selectedUnidad,
-            emptyList()
-        ) { newPatients, hasMore ->
-            patients = newPatients
-            hasMoreData = hasMore
+    // Simular carga de doctores
+    LaunchedEffect(key1 = true) {
+        coroutineScope.launch {
+            delay(1000) // Simular delay de 1 segundo
+            pacientes = generateDummyPatients()
             isLoading = false
         }
     }
 
-    // Monitorear cuando se llega al final de la lista
-    LaunchedEffect(listState) {
-        snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull() }
-            .collect { visibleItem ->
-                if (visibleItem != null && visibleItem.index >= patients.size - 1 && !isLoading && hasMoreData) {
-                    coroutineScope.launch {
-                        isLoading = true
-                        currentPage++
-                        loadMorePatients(
-                            currentPage,
-                            selectedHospital,
-                            selectedDepartamento,
-                            selectedUnidad,
-                            patients
-                        ) { newPatients, hasMore ->
-                            patients = newPatients
-                            hasMoreData = hasMore
-                            isLoading = false
-                        }
-                    }
-                }
-            }
+    // Filtrar doctores
+    val filteredDoctors = pacientes.filter { paciente ->
+        (selectedHospital == null || paciente.apellidos == selectedHospital) &&
+                (selectedDepartamento == null || paciente.departamentoNombre == selectedDepartamento) &&
+                (selectedUnidad == null || paciente.unidadNombre == selectedUnidad)
     }
 
-    val darkColorScheme = darkColorScheme(
-        primary = Color(0xFF64B5F6),
-        surface = Color(0xFF1E1E1E),
-        background = Color(0xFF121212),
-        onSurface = Color(0xFFE0E0E0),
-        onBackground = Color(0xFFE0E0E0)
-    )
-
-    MaterialTheme(colorScheme = darkColorScheme) {
-        Scaffold(
-            topBar = {
-                PatientHeader(
-                    onHospitalSelected = { selectedHospital = it },
-                    onDepartamentoSelected = { selectedDepartamento = it },
-                    onUnidadSelected = { selectedUnidad = it }
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = "Listado de pacientes",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(16.dp),
+            color = Color.White
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .zIndex(2f)
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Box(modifier = Modifier.weight(1f)) {
+                SelectInputFieldFiltrado(
+                    value = selectedHospital ?: "Seleccionar",
+                    onValueChange = {
+                        selectedHospital = it
+                        selectedDepartamento = null
+                        selectedUnidad = null
+                    },
+                    label = "Hospital",
+                    options = listOf("Hospital A", "Hospital B", "Hospital C"),
+                    enabled = true
                 )
-            },
-            containerColor = MaterialTheme.colorScheme.background
-        ) { paddingValues ->
-            LazyColumn(
-                state = listState,
-                contentPadding = paddingValues,
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp)
-            ) {
-                items(patients.sortedBy { "${it.nombre} ${it.apellidos}" }) { patient ->
-                    PatientItem(patient)
-                }
-
-                item {
-                    if (isLoading) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                        }
-                    }
-                }
+            }
+            Spacer(modifier = Modifier.width(15.dp))
+            Box(modifier = Modifier.weight(1f)) {
+                SelectInputFieldFiltrado(
+                    value = selectedDepartamento ?: "Seleccionar",
+                    onValueChange = {
+                        selectedDepartamento = it
+                        selectedUnidad = null
+                    },
+                    label = "Departamento",
+                    options = listOf("Cardiología", "Neurología", "Pediatría"),
+                    enabled = selectedHospital != null
+                )
+            }
+            Spacer(modifier = Modifier.width(15.dp))
+            Box(modifier = Modifier.weight(1f)) {
+                SelectInputFieldFiltrado(
+                    value = selectedUnidad ?: "Seleccionar",
+                    onValueChange = { selectedUnidad = it },
+                    label = "Unidad",
+                    options = listOf("Unidad A", "Unidad B", "Unidad C"),
+                    enabled = selectedHospital != null && selectedDepartamento != null
+                )
             }
         }
-    }
-}
 
-suspend fun loadMorePatients(
-    page: Int,
-    hospitalId: Int?,
-    departamentoId: Int?,
-    unidadId: Int?,
-    currentPatients: List<Patient>,
-    callback: (List<Patient>, Boolean) -> Unit
-) {
-    val newPatients = PatientDAO.getFilteredPatients(
-        hospitalId = hospitalId, // Asume que siempre hay un hospital seleccionado
-        departamentoId = departamentoId,
-        unidadId = unidadId,
-        offset = page * PAGE_SIZE,
-        limit = PAGE_SIZE
-    )
-    val updatedPatients = currentPatients + newPatients
-    callback(updatedPatients, newPatients.size == PAGE_SIZE)
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun PatientHeader(
-    onHospitalSelected: (Int) -> Unit,
-    onDepartamentoSelected: (Int?) -> Unit,
-    onUnidadSelected: (Int?) -> Unit
-) {
-    var selectedHospital by remember { mutableStateOf<Int?>(null) }
-    var selectedDepartamento by remember { mutableStateOf<Int?>(null) }
-    var selectedUnidad by remember { mutableStateOf<Int?>(null) }
-
-    val hospitals = listOf(1, 2, 3) // Reemplaza con tus datos reales
-    val departamentos = listOf(1, 2, 3) // Reemplaza con tus datos reales
-    val unidades = listOf(1, 2, 3) // Reemplaza con tus datos reales
-
-    Column {
-        TopAppBar(
-            title = {
-                Text(
-                    "Listado de Pacientes",
-                    style = MaterialTheme.typography.titleLarge
-                )
-            },
-            colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.background,
-                titleContentColor = MaterialTheme.colorScheme.onBackground
-            )
-        )
-
-        // Hospital Dropdown
-        FilterDropdown(
-            label = "Hospital",
-            options = hospitals,
-            selectedOption = selectedHospital,
-            onOptionSelected = {
-                selectedHospital = it
-                onHospitalSelected(it)
-                selectedDepartamento = null
-                selectedUnidad = null
-                onDepartamentoSelected(null)
-                onUnidadSelected(null)
-            }
-        )
-
-        // Departamento Dropdown
-        FilterDropdown(
-            label = "Departamento",
-            options = departamentos,
-            selectedOption = selectedDepartamento,
-            onOptionSelected = {
-                selectedDepartamento = it
-                onDepartamentoSelected(it)
-                selectedUnidad = null
-                onUnidadSelected(null)
-            },
-            enabled = selectedHospital != null
-        )
-
-        // Unidad Dropdown
-        FilterDropdown(
-            label = "Unidad",
-            options = unidades,
-            selectedOption = selectedUnidad,
-            onOptionSelected = {
-                selectedUnidad = it
-                onUnidadSelected(it)
-            },
-            enabled = selectedDepartamento != null
-        )
-    }
-}
-
-@Composable
-fun PatientDetails(patient: Patient) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        PatientDetailItem(Icons.Rounded.Badge, "Número de Historia Clínica", patient.numeroHistoriaClinica)
-        PatientDetailItem(Icons.Rounded.Cake, "Fecha de Nacimiento", patient.fechaNacimiento)
-        PatientDetailItem(Icons.Rounded.Home, "Dirección", patient.direccion)
-        PatientDetailItem(Icons.Rounded.DepartureBoard, "Departamento", patient.departamentoNombre)
-        PatientDetailItem(Icons.Rounded.Group, "Unidad", patient.unidadNombre)
-    }
-}
-@Composable
-fun PatientDetailItem(icon: ImageVector, label: String, value: String) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(
-            imageVector = icon,
-            contentDescription = label,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(20.dp)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Column {
-            Text(
-                label,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-            )
-            Text(
-                value,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun PatientItem(patient: Patient) {
-    var expanded by remember { mutableStateOf(false) }
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .animateContentSize(),
-        onClick = { expanded = !expanded },
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        shape = RoundedCornerShape(8.dp)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+        if (isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
             ) {
-                Image(
-                    painter = painterResource("patient_avatar.png"),
-                    contentDescription = "Patient Avatar",
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop
-                )
-                Spacer(modifier = Modifier.width(16.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        "${patient.nombre} ${patient.apellidos}",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        "ID: ${patient.numeroHistoriaClinica}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
+                CircularProgressIndicator(color = Color(16, 78, 146))
+            }
+        } else {
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(minSize = 190.dp),
+                contentPadding = PaddingValues(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(20.dp),
+                verticalArrangement = Arrangement.spacedBy(25.dp),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(filteredDoctors) { paciente ->
+                    RotatingCard(
+                        frontGradient = Colores.patientGradient,
+                        labelText = "Paciente",
+                        avatar = painterResource("Untitled.png"),
+                        titleText = paciente.nombre,
+                        subtitleText = paciente.numeroHistoriaClinica,
+                        infoItems = listOf(
+                            InfoItem(Icons.Rounded.Badge, "Número de Historia", "67890"),
+                            InfoItem(Icons.Rounded.Phone, "Teléfono", "555-5678"),
+                            InfoItem(Icons.Rounded.CalendarToday, "Fecha de Nacimiento", "01/01/1990"),
+                            InfoItem(Icons.Rounded.Email, "Correo Electrónico", "paciente@example.com")
+                        )
                     )
                 }
-                Icon(
-                    imageVector = if (expanded) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
-                    contentDescription = "Expand",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-            if (expanded) {
-                Spacer(modifier = Modifier.height(16.dp))
-                PatientDetails(patient)
             }
         }
+    }
+}
+
+fun generateDummyPatients(): List<Patient> {
+    return List(20) { index ->
+        Patient(
+            nombre = "Dr. Nombre ${index + 1}",
+            numeroHistoriaClinica = "ID${100 + index}",
+            apellidos = listOf("Hospital A", "Hospital B", "Hospital C").random(),
+            departamentoNombre = listOf("Cardiología", "Neurología", "Pediatría").random(),
+            unidadNombre = listOf("Unidad A", "Unidad B", "Unidad C").random(),
+            fechaNacimiento = "2003",
+             direccion = "166"
+        )
     }
 }

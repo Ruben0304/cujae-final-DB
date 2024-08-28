@@ -1,17 +1,12 @@
 package vistas
 
-import AnimatedDataList
-import AnimatedProgressCard
-import FloatingActionButtonWithMenu
-import PdfGeneratorCard
-import StatCard
+import vistas.componentes.AnimatedProgressCard
+import vistas.componentes.StatCard
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material.icons.outlined.LocalHospital
@@ -19,9 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -119,7 +112,7 @@ fun DashboardContent() {
             AnimatedProgressCard("Ocupación de Camas", 0.2f, Color(0xff4c6faf))
         }
 
-        FloatingActionButtonWithMenu()
+//        FloatingActionButtonWithMenu()
 
 
 //        PdfGeneratorCard()

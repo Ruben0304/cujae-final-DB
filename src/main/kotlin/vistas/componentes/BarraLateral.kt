@@ -1,6 +1,5 @@
-package vistas
+package vistas.componentes
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
@@ -12,6 +11,7 @@ import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -63,8 +63,9 @@ fun SideBar(selectedItem: String, onItemSelected: (String) -> Unit) {
 
         Spacer(modifier = Modifier.weight(1f))
 
-        SideBarMenuItem("Configuración", Icons.Default.Settings, selectedItem, onItemSelected)
-        SideBarMenuItem("Búsqueda", Icons.Default.Search, selectedItem, onItemSelected)
+//        SideBarMenuItem("Búsqueda", Icons.Default.Search, selectedItem, onItemSelected)
+        SideBarMenuItem("Cerrar Sesión", Icons.AutoMirrored.Filled.Logout, selectedItem, onItemSelected)
+
     }
 }
 

@@ -101,7 +101,7 @@ object DoctorDAO {
     }
 
     suspend fun createDoctor(doctor: Doctor): Boolean = withContext(Dispatchers.IO) {
-        val connection: Connection = Database.getConnection()
+        val connection = Database.getConnection()
         val statement = connection.prepareStatement(
             "INSERT INTO Medico (codigo, nombre, apellidos, especialidad, numero_licencia, telefono, anios_experiencia, datos_contacto, unidad_codigo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
         )

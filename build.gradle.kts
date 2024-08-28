@@ -25,6 +25,19 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
     implementation(compose.materialIconsExtended)
     implementation(compose.material3)
+    // https://mvnrepository.com/artifact/io.coil-kt/coil-compose
+    // https://mvnrepository.com/artifact/io.coil-kt.coil3/coil-compose
+    implementation("io.coil-kt.coil3:coil-compose:3.0.0-alpha09")
+    // https://mvnrepository.com/artifact/com.airbnb.android/lottie-compose
+    // https://mvnrepository.com/artifact/com.airbnb.android/lottie
+// https://mvnrepository.com/artifact/io.coil-kt.coil3/coil-gif
+
+
+
+
+
+
+
 
 
 
