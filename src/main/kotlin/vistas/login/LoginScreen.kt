@@ -17,8 +17,10 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import auth.Auth
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import vistas.componentes.ShowToast
 
 @Composable
 fun LoginScreen() {
@@ -28,6 +30,10 @@ fun LoginScreen() {
     var showDashboardApp by remember { mutableStateOf(false) }
     var isButtonLoading by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    var errorAuthToast by remember { mutableStateOf(false) }
+
+
+
 
     if (showDashboardApp) {
         DefaultPreview()
@@ -115,10 +121,17 @@ fun LoginScreen() {
                             onClick = {
                                 scope.launch {
                                     isButtonLoading = true
-                                    delay(2000) // Delay de 2 segundos
+                                    val session = Auth.login(username.text, password.text)
                                     isButtonLoading = false
-                                    isLoading = true
-                                    showDashboardApp = true
+
+                                    if (session != null) {
+                                        // Autenticación exitosa
+                                        isLoading = true
+                                        showDashboardApp = true
+                                    } else {
+                                        errorAuthToast = true
+                                        // Implement your error toast here
+                                    }
                                 }
                             },
                             modifier = Modifier
@@ -143,6 +156,7 @@ fun LoginScreen() {
                                 )
                             }
                         }
+
                     }
                 }
             }
