@@ -13,9 +13,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import dao.PatientDAO
+import global.Global
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import modelos.Patient
+import modelos.Registro
 import vistas.util.Colores
 import vistas.componentes.InfoItem
 import vistas.componentes.RotatingCard
@@ -23,30 +26,36 @@ import vistas.componentes.SelectInputFieldFiltrado
 
 
 @Composable
-fun PatientListContent() {
-    var pacientes by remember { mutableStateOf(listOf<Patient>()) }
+fun PatientListContent(unidadCodigo:String, departamentoCodigo: String) {
+    var pacientes by remember { mutableStateOf(listOf<Registro>()) }
     var isLoading by remember { mutableStateOf(true) }
     var selectedHospital by remember { mutableStateOf<String?>(null) }
     var selectedDepartamento by remember { mutableStateOf<String?>(null) }
     var selectedUnidad by remember { mutableStateOf<String?>(null) }
+    val estadoColores = mapOf(
+        "pendiente" to listOf(Color(0xFFFF7043), Color(0xFFF4511E)),   // Tonalidades más oscuras de naranja
+        "atendido" to listOf(Color(0xFF388E3C), Color(0xFF2E7D32)),    // Tonalidades más oscuras de verde
+        "no atendido" to listOf(Color(0xFFC62828), Color(0xFFB71C1C))  // Tonalidades más oscuras de rojo
+    )
+
 
     val coroutineScope = rememberCoroutineScope()
 
     // Simular carga de doctores
     LaunchedEffect(key1 = true) {
         coroutineScope.launch {
-            delay(1000) // Simular delay de 1 segundo
-            pacientes = generateDummyPatients()
+            if (Global.selectedHospital != null )
+                  pacientes = PatientDAO.obtenerPacientesConEstadoYCausa(unidadCodigo,departamentoCodigo,Global.selectedHospital)
             isLoading = false
         }
     }
 
     // Filtrar doctores
-    val filteredDoctors = pacientes.filter { paciente ->
-        (selectedHospital == null || paciente.apellidos == selectedHospital) &&
-                (selectedDepartamento == null || paciente.departamentoNombre == selectedDepartamento) &&
-                (selectedUnidad == null || paciente.unidadNombre == selectedUnidad)
-    }
+//    val filteredDoctors = pacientes.filter { paciente ->
+//        (selectedHospital == null || paciente.apellidos == selectedHospital) &&
+//                (selectedDepartamento == null || paciente.departamentoNombre == selectedDepartamento) &&
+//                (selectedUnidad == null || paciente.unidadNombre == selectedUnidad)
+//    }
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
@@ -116,19 +125,27 @@ fun PatientListContent() {
                 verticalArrangement = Arrangement.spacedBy(25.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(filteredDoctors) { paciente ->
+                items(pacientes) { paciente ->
+                    val frontGradient = when (paciente.estado) {
+                        "pendiente" -> estadoColores["pendiente"]!!
+                        "atendido" -> estadoColores["atendido"]!!
+                        "no atendido" -> estadoColores["no atendido"]!!
+                        else -> listOf(Color.Gray, Color.DarkGray)  // Color por defecto si no coincide
+                    }
+                    var items = mutableListOf<InfoItem>(
+                        InfoItem(Icons.Rounded.CalendarMonth, "Fecha de nacimiento", paciente.fecha_nacimiento) ,
+                        InfoItem(Icons.Rounded.Map, "Dirección", paciente.direccion),
+                    )
+                    if(paciente.estado == "no atendido" && paciente.causa_no_atencion != null)
+                        items.add( InfoItem(Icons.Rounded.Map, "", paciente.causa_no_atencion),)
+
                     RotatingCard(
-                        frontGradient = Colores.patientGradient,
-                        labelText = "Paciente",
+                        frontGradient =  frontGradient,
+                        labelText = paciente.estado.replaceFirstChar { it.uppercase() },
                         avatar = painterResource("Untitled.png"),
-                        titleText = paciente.nombre,
-                        subtitleText = paciente.numeroHistoriaClinica,
-                        infoItems = listOf(
-                            InfoItem(Icons.Rounded.Badge, "Número de Historia", "67890"),
-                            InfoItem(Icons.Rounded.Phone, "Teléfono", "555-5678"),
-                            InfoItem(Icons.Rounded.CalendarToday, "Fecha de Nacimiento", "01/01/1990"),
-                            InfoItem(Icons.Rounded.Email, "Correo Electrónico", "paciente@example.com")
-                        )
+                        titleText = paciente.nombre + " " + paciente.apellidos,
+                        subtitleText = paciente.numero_historia_clinica,
+                        infoItems = items
                     )
                 }
             }
@@ -136,16 +153,16 @@ fun PatientListContent() {
     }
 }
 
-fun generateDummyPatients(): List<Patient> {
-    return List(20) { index ->
-        Patient(
-            nombre = "Dr. Nombre ${index + 1}",
-            numeroHistoriaClinica = "ID${100 + index}",
-            apellidos = listOf("Hospital A", "Hospital B", "Hospital C").random(),
-            departamentoNombre = listOf("Cardiología", "Neurología", "Pediatría").random(),
-            unidadNombre = listOf("Unidad A", "Unidad B", "Unidad C").random(),
-            fechaNacimiento = "2003",
-             direccion = "166"
-        )
-    }
-}
+//fun generateDummyPatients(): List<Patient> {
+//    return List(20) { index ->
+//        Patient(
+//            nombre = "Dr. Nombre ${index + 1}",
+//            numeroHistoriaClinica = "ID${100 + index}",
+//            apellidos = listOf("Hospital A", "Hospital B", "Hospital C").random(),
+//            departamentoNombre = listOf("Cardiología", "Neurología", "Pediatría").random(),
+//            unidadNombre = listOf("Unidad A", "Unidad B", "Unidad C").random(),
+//            fechaNacimiento = "2003",
+//             direccion = "166"
+//        )
+//    }
+//}

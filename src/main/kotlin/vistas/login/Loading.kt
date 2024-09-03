@@ -1,5 +1,6 @@
 package vistas.login
 
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -20,6 +21,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import repository.Supabase
 import vistas.componentes.ShowToast
+import vistas.componentes.ToastHost
+import vistas.componentes.ToastManager
+import vistas.componentes.ToastType
+
 import java.net.InetSocketAddress
 import java.net.Socket
 import java.net.SocketAddress
@@ -30,6 +35,8 @@ fun StartLoading() {
     var isLoading by remember { mutableStateOf(true) }
     var internet by remember { mutableStateOf(false) }
     var showToast by remember { mutableStateOf(false) }
+
+
 
     LaunchedEffect(Unit) {
         delay(1000) // 1 second delay
@@ -78,7 +85,7 @@ fun StartLoading() {
                             enter = fadeIn(animationSpec = tween(durationMillis = 1000))
                         ) {
                             CircularProgressIndicator(
-                                modifier = Modifier.size(55.dp),
+                                modifier = Modifier.size(45.dp),
                                 color = Color.Red
                             )
                         }
@@ -90,7 +97,8 @@ fun StartLoading() {
 
             // Show toast when there's no internet connection
             if (showToast) {
-                ShowToast("Error de conexión a internet", false)
+                ToastManager.showToast("Error de conexión a internet",ToastType.ERROR)
+//                ShowToast("Error de conexión a internet", false)
                 // Reset showToast after displaying
                 LaunchedEffect(showToast) {
                     delay(3000) // Show toast for 3 seconds
@@ -99,6 +107,7 @@ fun StartLoading() {
             }
         }
     }
+    ToastHost()
 }
 
 suspend fun isInternetAvailable(): Boolean = withContext(Dispatchers.IO) {

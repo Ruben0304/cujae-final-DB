@@ -21,6 +21,9 @@ import auth.Auth
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import vistas.componentes.ShowToast
+import vistas.componentes.ToastHost
+import vistas.componentes.ToastManager
+import vistas.componentes.ToastType
 
 @Composable
 fun LoginScreen() {
@@ -129,7 +132,7 @@ fun LoginScreen() {
                                         isLoading = true
                                         showDashboardApp = true
                                     } else {
-                                        errorAuthToast = true
+                                        ToastManager.showToast("Credenciales incorrectas", ToastType.ERROR)
                                         // Implement your error toast here
                                     }
                                 }
@@ -169,6 +172,7 @@ fun LoginScreen() {
 //                    color = Color.Red
 //                )
 //            }
+            ToastHost()
         }
     }
 }

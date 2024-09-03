@@ -28,6 +28,9 @@ import coil3.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.delay
 import vistas.DashboardApp
 import vistas.componentes.ShowToast
+import vistas.componentes.ToastHost
+import vistas.componentes.ToastManager
+import vistas.componentes.ToastType
 
 data class Profile(val name: String, val color: Color)
 
@@ -41,7 +44,7 @@ fun DefaultPreview() {
         Profile("Pediatrico", Color(0xFF8E24AA)) // Morado
     )
     ProfileSelectionScreen(profiles)
-    ShowToast("Sesión iniciada")
+    ToastManager.showToast("Sesión iniciada",ToastType.SUCCESS)
 }
 
 
@@ -99,6 +102,7 @@ fun ProfileSelectionScreen(profiles: List<Profile>) {
             }
 
         }
+        ToastHost()
     }
 
     // Pantalla de login

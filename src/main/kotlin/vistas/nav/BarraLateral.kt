@@ -1,5 +1,7 @@
-package vistas.componentes
+package vistas.nav
 
+import HospitalListContent
+import PatientListContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
@@ -16,14 +18,25 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import vistas.DashboardContent
+import vistas.DepartamentoTable
+import vistas.DoctorListContent
+import vistas.login.LoginScreen
+
+
 
 @Composable
-fun SideBar(selectedItem: String, onItemSelected: (String) -> Unit) {
+fun SideBar(navController: NavHostController) {
     var expandedMenu by remember { mutableStateOf("") }
 
     Column(
@@ -32,40 +45,42 @@ fun SideBar(selectedItem: String, onItemSelected: (String) -> Unit) {
             .fillMaxHeight()
             .background(Color(0xFF1E1E1E))
             .padding(vertical = 8.dp)
-
     ) {
         SideBarLogo()
-        Divider(color = Color(0xFF3E3E3E), thickness = 1.dp,modifier = Modifier.padding(bottom = 20.dp))
+        Divider(color = Color(0xFF3E3E3E), thickness = 1.dp, modifier = Modifier.padding(bottom = 20.dp))
 
-        SideBarMenuItem("Inicio", Icons.Default.Home, selectedItem, onItemSelected)
+        SideBarMenuItem("Inicio", Icons.Default.Home, navController) { navController.navigate("inicio") }
 
         SideBarMenuGroup("Gestión", Icons.Default.Business, expandedMenu) { expandedMenu = if (expandedMenu == "Gestión") "" else "Gestión" }
         if (expandedMenu == "Gestión") {
-            SideBarSubMenuItem("Hospitales", selectedItem, onItemSelected)
-            SideBarSubMenuItem("Departamentos", selectedItem, onItemSelected)
-            SideBarSubMenuItem("Unidades", selectedItem, onItemSelected)
+            SideBarSubMenuItem("Hospitales", navController) { navController.navigate("hospitales") }
+            SideBarSubMenuItem("Departamentos", navController) { navController.navigate("departamentos") }
+//            SideBarSubMenuItem("Unidades", navController) { navController.navigate("unidades") }
         }
 
         SideBarMenuGroup("Personal", Icons.Default.People, expandedMenu) { expandedMenu = if (expandedMenu == "Personal") "" else "Personal" }
         if (expandedMenu == "Personal") {
-            SideBarSubMenuItem("Médicos", selectedItem, onItemSelected)
-            SideBarSubMenuItem("Pacientes", selectedItem, onItemSelected)
+            SideBarSubMenuItem("Médicos", navController) { navController.navigate("medicos") }
+            SideBarSubMenuItem("Pacientes", navController) { navController.navigate("pacientesHospital") }
         }
 
-        SideBarMenuItem("Consultas", Icons.Default.EventNote, selectedItem, onItemSelected)
-        SideBarMenuItem("Turnos", Icons.Default.Schedule, selectedItem, onItemSelected)
+        // Nuevo elemento con burbuja de "IA"
 
-        SideBarMenuGroup("Informes", Icons.Default.Assessment, expandedMenu) { expandedMenu = if (expandedMenu == "Informes") "" else "Informes" }
-        if (expandedMenu == "Informes") {
-            SideBarSubMenuItem("Resúmenes", selectedItem, onItemSelected)
-            SideBarSubMenuItem("Listados", selectedItem, onItemSelected)
-        }
+
+
+//        SideBarMenuItem("Consultas", Icons.Default.EventNote, navController) { navController.navigate("consultas") }
+//        SideBarMenuItem("Turnos", Icons.Default.Schedule, navController) { navController.navigate("turnos") }
+
+//        SideBarMenuGroup("Informes", Icons.Default.Assessment, expandedMenu) { expandedMenu = if (expandedMenu == "Informes") "" else "Informes" }
+//        if (expandedMenu == "Informes") {
+//            SideBarSubMenuItem("Resúmenes", navController) { navController.navigate("resumenes") }
+//            SideBarSubMenuItem("Listados", navController) { navController.navigate("listados") }
+//        }
+        SideBarMenuItemWithBubble("Consulta verbal", Icons.Default.AutoAwesome, navController) { navController.navigate("ia") }
 
         Spacer(modifier = Modifier.weight(1f))
 
-//        SideBarMenuItem("Búsqueda", Icons.Default.Search, selectedItem, onItemSelected)
-        SideBarMenuItem("Cerrar Sesión", Icons.AutoMirrored.Filled.Logout, selectedItem, onItemSelected)
-
+        SideBarMenuItem("Cerrar Sesión", Icons.AutoMirrored.Filled.Logout, navController) { navController.navigate("login") }
     }
 }
 
@@ -101,8 +116,8 @@ fun SideBarLogo() {
 }
 
 @Composable
-fun SideBarMenuItem(text: String, icon: ImageVector, selectedItem: String, onItemSelected: (String) -> Unit) {
-    val isSelected = selectedItem == text
+fun SideBarMenuItem(text: String, icon: ImageVector, navController: NavHostController, onClick: () -> Unit) {
+    val isSelected = navController.currentDestination?.route == text
     var isHovered by remember { mutableStateOf(false) }
 
     val backgroundColor = when {
@@ -116,13 +131,11 @@ fun SideBarMenuItem(text: String, icon: ImageVector, selectedItem: String, onIte
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 4.dp)
             .background(backgroundColor, shape = RoundedCornerShape(8.dp))
-            .clickable { onItemSelected(text) }
+            .clickable { onClick() }
             .hoverable(
                 interactionSource = remember { MutableInteractionSource() },
-
-                enabled = true,
-
-                )
+                enabled = true
+            )
             .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -147,10 +160,8 @@ fun SideBarMenuGroup(text: String, icon: ImageVector, expandedMenu: String, onTo
             .clickable(onClick = onToggle)
             .hoverable(
                 interactionSource = remember { MutableInteractionSource() },
-
-                enabled = true,
-
-                )
+                enabled = true
+            )
             .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -168,8 +179,8 @@ fun SideBarMenuGroup(text: String, icon: ImageVector, expandedMenu: String, onTo
 }
 
 @Composable
-fun SideBarSubMenuItem(text: String, selectedItem: String, onItemSelected: (String) -> Unit) {
-    val isSelected = selectedItem == text
+fun SideBarSubMenuItem(text: String, navController: NavHostController, onClick: () -> Unit) {
+    val isSelected = navController.currentDestination?.route == text
     var isHovered by remember { mutableStateOf(false) }
 
     val backgroundColor = when {
@@ -183,13 +194,11 @@ fun SideBarSubMenuItem(text: String, selectedItem: String, onItemSelected: (Stri
             .fillMaxWidth()
             .padding(start = 40.dp, end = 8.dp, top = 2.dp, bottom = 2.dp)
             .background(backgroundColor, shape = RoundedCornerShape(8.dp))
-            .clickable { onItemSelected(text) }
+            .clickable { onClick() }
             .hoverable(
                 interactionSource = remember { MutableInteractionSource() },
-
-                enabled = true,
-
-                )
+                enabled = true
+            )
             .padding(horizontal = 12.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -200,5 +209,51 @@ fun SideBarSubMenuItem(text: String, selectedItem: String, onItemSelected: (Stri
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(text, color = Color.White, fontSize = 12.sp)
+    }
+}
+
+@Composable
+fun SideBarMenuItemWithBubble(text: String, icon: ImageVector, navController: NavHostController, onClick: () -> Unit) {
+    val isSelected = navController.currentDestination?.route == text
+    var isHovered by remember { mutableStateOf(false) }
+
+    val backgroundColor = when {
+        isSelected -> Color(16, 78, 146)
+        isHovered -> Color(0xFF2A2A2A)
+        else -> Color.Transparent
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .background(backgroundColor, shape = RoundedCornerShape(8.dp))
+            .clickable { onClick() }
+            .hoverable(
+                interactionSource = remember { MutableInteractionSource() },
+                enabled = true
+            )
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(text, color = Color.White, fontSize = 14.sp)
+
+        // Burbuja de "IA"
+        Box(
+            modifier = Modifier
+                .padding(start = 8.dp)
+                .size(24.dp)
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = listOf(Color(0xFF64B5F6), Color(0xFF1E88E5))
+                    ),
+                    shape = CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("IA", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+        }
     }
 }

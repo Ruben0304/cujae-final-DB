@@ -14,127 +14,52 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import dao.DoctorDAO
+import androidx.compose.ui.zIndex
+import dao.PatientDAO
 import global.Global
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import modelos.Doctor
+import modelos.Patient
+import modelos.PatientTable
 import vistas.util.Colores
 import vistas.componentes.InfoItem
 import vistas.componentes.RotatingCard
+import vistas.componentes.SelectInputFieldFiltrado
 
 
 @Composable
-fun DoctorListContent(departamentoId: String? = null, unidadCodigo: String? = null) {
-    var doctors by remember { mutableStateOf(listOf<Doctor>()) }
+fun PacientesHospital() {
+    var pacientes by remember { mutableStateOf(listOf<PatientTable>()) }
     var isLoading by remember { mutableStateOf(true) }
-    var selectedHospital by remember { mutableStateOf<String?>(null) }
-    var selectedDepartamento by remember { mutableStateOf<String?>(null) }
-    var selectedUnidad by remember { mutableStateOf<String?>(null) }
+
 
     val coroutineScope = rememberCoroutineScope()
 
     // Simular carga de doctores
     LaunchedEffect(key1 = true) {
         coroutineScope.launch {
-            if (Global.selectedHospital != null)
-                if (unidadCodigo != null && departamentoId != null)
-                    doctors = DoctorDAO.listar_medicos_por_unidad(unidadCodigo, departamentoId, Global.selectedHospital)
-                else if (departamentoId != null)
-                    doctors = DoctorDAO.listar_medicos_por_departamento(departamentoId, Global.selectedHospital)
-                else
-                    doctors = DoctorDAO.listar_medicos_por_hospital(Global.selectedHospital)
+            if (Global.selectedHospital != null )
+                pacientes = PatientDAO.getPacientesPorHospital(Global.selectedHospital)
             isLoading = false
         }
     }
 
     // Filtrar doctores
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    val filteredDoctors = doctors.filter { doctor ->
-        (selectedHospital == null || doctor.apellidos == selectedHospital) &&
-                (selectedDepartamento == null || doctor.especialidad == selectedDepartamento) &&
-                (selectedUnidad == null || doctor.telefono == selectedUnidad)
-    }
+//    val filteredDoctors = pacientes.filter { paciente ->
+//        (selectedHospital == null || paciente.apellidos == selectedHospital) &&
+//                (selectedDepartamento == null || paciente.departamentoNombre == selectedDepartamento) &&
+//                (selectedUnidad == null || paciente.unidadNombre == selectedUnidad)
+//    }
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = "Listado de médicos",
+            text = "Listado de pacientes",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(16.dp),
             color = Color.White
         )
+
 
         if (isLoading) {
             Box(
@@ -151,18 +76,16 @@ fun DoctorListContent(departamentoId: String? = null, unidadCodigo: String? = nu
                 verticalArrangement = Arrangement.spacedBy(25.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(filteredDoctors) { doctor ->
+                items(pacientes) { paciente ->
                     RotatingCard(
-                        frontGradient = Colores.doctorGradient,
-                        labelText = "Doctor",
-                        avatar = painterResource("a.jpg"),
-                        titleText = doctor.nombre + " " + doctor.apellidos,
-                        subtitleText = doctor.especialidad,
+                        frontGradient = Colores.patientGradient,
+                        labelText = "Paciente",
+                        avatar = painterResource("Untitled.png"),
+                        titleText = paciente.nombre + " " + paciente.apellidos,
+                        subtitleText = paciente.numeroHistoriaClinica,
                         infoItems = listOf(
-                            InfoItem(Icons.Rounded.Badge, "Número de Historia", doctor.numeroLicencia),
-                            InfoItem(Icons.Rounded.Phone, "Teléfono", doctor.telefono),
-                            InfoItem(Icons.Rounded.CalendarToday, "Años de exp.", doctor.aniosExperiencia.toString()),
-                            InfoItem(Icons.Rounded.Email, "Contacto", doctor.datosContacto)
+                            InfoItem(Icons.Rounded.Map, "Dirección", paciente.direccion),
+                            InfoItem(Icons.Rounded.CalendarToday, "Fecha de Nacimiento", paciente.fechaNacimiento),
                         )
                     )
                 }
@@ -171,6 +94,16 @@ fun DoctorListContent(departamentoId: String? = null, unidadCodigo: String? = nu
     }
 }
 
-
-
-
+//fun generateDummyPatients(): List<Patient> {
+//    return List(20) { index ->
+//        Patient(
+//            nombre = "Dr. Nombre ${index + 1}",
+//            numeroHistoriaClinica = "ID${100 + index}",
+//            apellidos = listOf("Hospital A", "Hospital B", "Hospital C").random(),
+//            departamentoNombre = listOf("Cardiología", "Neurología", "Pediatría").random(),
+//            unidadNombre = listOf("Unidad A", "Unidad B", "Unidad C").random(),
+//            fechaNacimiento = "2003",
+//             direccion = "166"
+//        )
+//    }
+//}

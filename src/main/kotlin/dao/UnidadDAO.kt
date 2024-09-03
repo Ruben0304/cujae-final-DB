@@ -1,46 +1,57 @@
 package dao
 
+import dao.DepartamentoDAO.ODPRequest
 import database.Database
+import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.rpc
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
+import modelos.Departamento
 import modelos.Unidad
+import repository.Supabase
 import java.sql.Connection
 
 
-
 object UnidadDAO {
+
+    @Serializable
+    data class OUXHDRequest(val p_hospital_codigo: String, val p_departamento_codigo: String)
+
     suspend fun obtenerUnidadesPorHospitalYDepartamento(
         hospitalCodigo: String,
-        departamentoCodigo: String,
-        offset: Int,
-        limit: Int
+        departamentoCodigo: String
     ): List<Unidad> = withContext(Dispatchers.IO) {
-        val unidades = mutableListOf<Unidad>()
-        val connection: Connection = Database.getConnection()
+        Supabase.coneccion.postgrest.rpc(
+            "obtener_unidades_por_hospital_y_departamento",
+            OUXHDRequest(hospitalCodigo, departamentoCodigo)
+        ).decodeList<Unidad>()
+    }
+    @Serializable
+    data class CrearUnidadRequest(
+        val p_codigo: String,
+        val p_nombre: String,
+        val p_ubicacion: String,
+        val p_departamento_codigo: String,
+        val p_hospital_codigo: String
+    )
 
-        val query = "SELECT * FROM obtener_unidades_por_hospital_y_departamento(?, ?) OFFSET ? LIMIT ?"
-
-        connection.prepareStatement(query).use { statement ->
-            statement.setString(1, hospitalCodigo)
-            statement.setString(2, departamentoCodigo)
-            statement.setInt(3, offset)
-            statement.setInt(4, limit)
-            val resultSet = statement.executeQuery()
-
-            while (resultSet.next()) {
-                unidades.add(
-                    Unidad(
-                        codigo = resultSet.getString("unidad_codigo"),
-                        nombre = resultSet.getString("unidad_nombre"),
-                        ubicacion = resultSet.getString("ubicacion"),
-                        departamentoCodigo = departamentoCodigo,
-                        hospitalCodigo = hospitalCodigo
-                    )
-                )
-            }
-        }
-
-        connection.close()
-        unidades
+    suspend fun crearUnidad(
+        codigo: String,
+        nombre: String,
+        ubicacion: String,
+        departamentoCodigo: String,
+        hospitalCodigo: String
+    ) = withContext(Dispatchers.IO) {
+        Supabase.coneccion.postgrest.rpc(
+            "crear_unidad",
+            CrearUnidadRequest(
+                p_codigo = codigo,
+                p_nombre = nombre,
+                p_ubicacion = ubicacion,
+                p_departamento_codigo = departamentoCodigo,
+                p_hospital_codigo = hospitalCodigo
+            )
+        )
     }
 }

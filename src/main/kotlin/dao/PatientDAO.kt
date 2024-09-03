@@ -1,157 +1,128 @@
 package dao
 
 import database.Database
+import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.query.Count
+import io.github.jan.supabase.postgrest.rpc
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
+import modelos.Doctor
 import modelos.Patient
+import modelos.PatientTable
+import modelos.Registro
+import repository.Supabase
 import java.sql.Connection
 
 object PatientDAO {
 
-    suspend fun getFilteredPatients(
-        hospitalId: Int?,
-        departamentoId: Int? = null,
-        unidadId: Int? = null,
-        offset: Int,
-        limit: Int
+    @Serializable
+    data class PURequest(
+        val p_departamento_codigo: String,
+        val p_hospital_codigo: String,
+        val p_unidad_codigo: String
+    )
+
+    suspend fun listar_pacientes_por_unidad(
+        hospitalId: String,
+        departamentoId: String,
+        unidadId: String
     ): List<Patient> = withContext(Dispatchers.IO) {
-        val patients = mutableListOf<Patient>()
-        val connection: Connection = Database.getConnection()
-
-        val query = when {
-            hospitalId == null -> "SELECT * FROM listar_pacientes_todos() OFFSET ? LIMIT ?"
-            unidadId != null -> "SELECT * FROM get_patients_by_unit(?, ?, ?) OFFSET ? LIMIT ?"
-            departamentoId != null -> "SELECT * FROM get_patients_by_department(?, ?) OFFSET ? LIMIT ?"
-            else -> "SELECT * FROM get_patients_by_hospital(?) OFFSET ? LIMIT ?"
-        }
-
-        val statement = connection.prepareStatement(query)
-
-        when {
-            hospitalId == null ->{
-                statement.setInt(1, offset)
-                statement.setInt(2, limit)
-            }
-
-            unidadId != null -> {
-                statement.setInt(1, hospitalId)
-                statement.setInt(2, departamentoId!!)
-                statement.setInt(3, unidadId)
-                statement.setInt(4, offset)
-                statement.setInt(5, limit)
-            }
-            departamentoId != null -> {
-                statement.setInt(1, hospitalId)
-                statement.setInt(2, departamentoId)
-                statement.setInt(3, offset)
-                statement.setInt(4, limit)
-            }
-            else -> {
-                statement.setInt(1, hospitalId)
-                statement.setInt(2, offset)
-                statement.setInt(3, limit)
-            }
-        }
-
-        val resultSet = statement.executeQuery()
-
-        while (resultSet.next()) {
-            patients.add(
-                Patient(
-                    numeroHistoriaClinica = resultSet.getString("numero_historia_clinica"),
-                    nombre = resultSet.getString("paciente_nombre"),
-                    apellidos = resultSet.getString("paciente_apellidos"),
-                    fechaNacimiento = resultSet.getDate("fecha_nacimiento").toString(),
-                    direccion = resultSet.getString("direccion"),
-                    unidadNombre = resultSet.getString("unidad_nombre"),
-                    departamentoNombre = resultSet.getString("departamento_nombre")
-                )
+        Supabase.coneccion.postgrest.rpc(
+            "obtener_pacientes_por_unidad_departamento_hospital",
+            PURequest(unidadId, departamentoId, hospitalId)
+        ).decodeList<Patient>()
+    }
 
 
+    @Serializable
+    data class CrearPacienteRequest(
+        val p_numero_historia_clinica: String,
+        val p_nombre: String,
+        val p_apellidos: String,
+        val p_fecha_nacimiento: String, // Asegúrate de que el formato de la fecha sea compatible
+        val p_direccion: String,
+        val p_unidad_codigo: String,
+        val p_departamento_codigo: String,
+        val p_hospital_codigo: String
+    )
 
+    suspend fun crearPaciente(
+        numeroHistoriaClinica: String,
+        nombre: String,
+        apellidos: String,
+        fechaNacimiento: String,
+        direccion: String,
+        unidadCodigo: String,
+        departamentoCodigo: String,
+        hospitalCodigo: String
+    ) = withContext(Dispatchers.IO) {
+        Supabase.coneccion.postgrest.rpc(
+            "crear_paciente",
+            CrearPacienteRequest(
+                p_numero_historia_clinica = numeroHistoriaClinica,
+                p_nombre = nombre,
+                p_apellidos = apellidos,
+                p_fecha_nacimiento = fechaNacimiento,
+                p_direccion = direccion,
+                p_unidad_codigo = unidadCodigo,
+                p_departamento_codigo = departamentoCodigo,
+                p_hospital_codigo = hospitalCodigo
             )
+        )
+    }
+
+    suspend fun getPacientesPorHospital(hospitalCodigo: String): List<PatientTable> =
+        withContext(Dispatchers.IO) {
+            Supabase.coneccion.from("paciente")
+                .select {
+                    filter {
+                        eq("hospital_codigo", hospitalCodigo)
+                    }
+                }
+                .decodeList<PatientTable>()
         }
-        resultSet.close()
-        statement.close()
-        connection.close()
-        patients
-    }
-    suspend fun getPatientByNumeroHistoriaClinica(numeroHistoriaClinica: String): Patient? = withContext(Dispatchers.IO) {
-        val connection: Connection = Database.getConnection()
-        val statement = connection.prepareStatement(
-            "SELECT * FROM Paciente WHERE numero_historia_clinica = ?"
-        )
-        statement.setString(1, numeroHistoriaClinica)
-        val resultSet = statement.executeQuery()
 
-        val patient = if (resultSet.next()) {
-            Patient(
-                numeroHistoriaClinica = resultSet.getString("numero_historia_clinica"),
-                nombre = resultSet.getString("paciente_nombre"),
-                apellidos = resultSet.getString("paciente_apellidos"),
-                fechaNacimiento = resultSet.getDate("fecha_nacimiento").toString(),
-                direccion = resultSet.getString("direccion"),
-                unidadNombre = resultSet.getString("unidad_nombre"),
-                departamentoNombre = resultSet.getString("departamento_nombre")
-            )
-        } else {
-            null
+
+    @Serializable
+    data class PNARequest(val p_hospital_codigo: String)
+
+    @Serializable
+    data class PacientesNoAtendidos(
+        val hospital_nombre: String,
+        val departamento_nombre: String,
+        val unidad_nombre: String,
+        val numero_turno: Int,
+        val total_pacientes_no_atendidos: Int,
+        val numero_historia_clinica: String,
+        val paciente_nombre: String,
+        val paciente_apellidos: String,
+        val direccion: String,
+        val causa: String
+    )
+
+    suspend fun obtenerPacientesNoAtendidosPorHospital(p_hospital_codigo: String): List<PacientesNoAtendidos> =
+        withContext(Dispatchers.IO) {
+            Supabase.coneccion.postgrest.rpc("pacientes_no_atendidos_por_hospital", PNARequest(p_hospital_codigo))
+                .decodeList<PacientesNoAtendidos>()
         }
-        resultSet.close()
-        statement.close()
-        connection.close()
-        patient
+
+
+    @Serializable
+    data class OPCSRequest(
+        val p_unidad_codigo: String,
+        val p_departamento_codigo: String,
+        val p_hospital_codigo: String
+    )
+
+    suspend fun obtenerPacientesConEstadoYCausa(
+        unidadCodigo: String,
+        departamentoCodigo: String,
+        hospitalCodigo: String
+    ): List<Registro> = withContext(Dispatchers.IO) {
+        Supabase.coneccion.postgrest.rpc("obtener_pacientes_con_estado_y_causa", OPCSRequest(unidadCodigo, departamentoCodigo, hospitalCodigo))
+            .decodeList<Registro>()
     }
-
-    suspend fun createPatient(patient: Patient): Boolean = withContext(Dispatchers.IO) {
-        val connection: Connection = Database.getConnection()
-        val statement = connection.prepareStatement(
-            "INSERT INTO Paciente (numero_historia_clinica, nombre, apellidos, fecha_nacimiento, direccion, unidad_codigo) VALUES (?, ?, ?, ?, ?, ?)"
-        )
-        statement.setString(1, patient.numeroHistoriaClinica)
-        statement.setString(2, patient.nombre)
-        statement.setString(3, patient.apellidos)
-        statement.setDate(4, java.sql.Date.valueOf(patient.fechaNacimiento))
-        statement.setString(5, patient.direccion)
-        statement.setString(6, patient.unidadNombre)
-        statement.setString(6, patient.departamentoNombre)
-        val rowsInserted = statement.executeUpdate()
-        statement.close()
-        connection.close()
-        rowsInserted > 0
-    }
-
-    suspend fun updatePatient(patient: Patient): Boolean = withContext(Dispatchers.IO) {
-        val connection: Connection = Database.getConnection()
-        val statement = connection.prepareStatement(
-            "UPDATE Paciente SET nombre = ?, apellidos = ?, fecha_nacimiento = ?, direccion = ?, unidad_codigo = ? WHERE numero_historia_clinica = ?"
-        )
-        statement.setString(1, patient.nombre)
-        statement.setString(2, patient.apellidos)
-        statement.setDate(3, java.sql.Date.valueOf(patient.fechaNacimiento))
-        statement.setString(4, patient.direccion)
-        statement.setString(5, patient.unidadNombre)
-        statement.setString(6, patient.numeroHistoriaClinica)
-        val rowsUpdated = statement.executeUpdate()
-        statement.close()
-        connection.close()
-        rowsUpdated > 0
-    }
-
-    suspend fun deletePatient(numeroHistoriaClinica: String): Boolean = withContext(Dispatchers.IO) {
-        val connection: Connection = Database.getConnection()
-        val statement = connection.prepareStatement(
-            "DELETE FROM Paciente WHERE numero_historia_clinica = ?"
-        )
-        statement.setString(1, numeroHistoriaClinica)
-        val rowsDeleted = statement.executeUpdate()
-        statement.close()
-        connection.close()
-        rowsDeleted > 0
-    }
-
-
-
-
 
 }

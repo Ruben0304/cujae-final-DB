@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import dao.HospitalDAO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import modelos.Hospital
@@ -33,7 +34,7 @@ fun HospitalListContent() {
     LaunchedEffect(key1 = true) {
         coroutineScope.launch {
             delay(1000) // Simular delay de 1 segundo
-            hospitales = generateDummyHospital()
+            hospitales = HospitalDAO.getAllHospitals()
             isLoading = false
         }
     }
@@ -73,10 +74,10 @@ fun HospitalListContent() {
                         titleText = hospital.nombre,
                         subtitleText = hospital.codigo,
                         infoItems = listOf(
-                            InfoItem(Icons.Rounded.Badge, "Número de Historia", "67890"),
-                            InfoItem(Icons.Rounded.Phone, "Teléfono", "555-5678"),
-                            InfoItem(Icons.Rounded.CalendarToday, "Fecha de Nacimiento", "01/01/1990"),
-                            InfoItem(Icons.Rounded.Email, "Correo Electrónico", "paciente@example.com")
+//                            InfoItem(Icons.Rounded.Badge, "Número de Historia", hospital.),
+//                            InfoItem(Icons.Rounded.Phone, "Teléfono", "555-5678"),
+//                            InfoItem(Icons.Rounded.CalendarToday, "Fecha de Nacimiento", "01/01/1990"),
+//                            InfoItem(Icons.Rounded.Email, "Correo Electrónico", "paciente@example.com")
                         )
                     )
                 }

@@ -23,6 +23,7 @@ fun SearchBar(
     onSearchTriggered: () -> Unit
 ) {
     var isFocused by remember { mutableStateOf(false) }
+    var query by remember { mutableStateOf(searchText) }
 
     val backgroundColor by animateColorAsState(
         targetValue = if (isFocused) Color(0xFF2A2A2A) else Color(0xFF1E1E1E),
@@ -30,8 +31,8 @@ fun SearchBar(
     )
 
     TextField(
-        value = searchText,
-        onValueChange = onSearchTextChange,
+        value = query,
+        onValueChange = { query = it }, // Actualiza el valor de `query`, pero no dispara la búsqueda
         placeholder = { Text("Buscar...", color = Color.Gray) },
         modifier = Modifier
             .fillMaxWidth()
@@ -40,7 +41,12 @@ fun SearchBar(
             .background(backgroundColor)
             .onFocusChanged { focusState -> isFocused = focusState.isFocused },
         trailingIcon = {
-            IconButton(onClick = onSearchTriggered) {
+            IconButton(
+                onClick = {
+                    onSearchTextChange(query) // Actualiza el texto de búsqueda
+                    onSearchTriggered() // Realiza la búsqueda cuando se hace clic en el ícono
+                }
+            ) {
                 Icon(
                     imageVector = Icons.Default.Search,
                     contentDescription = "Buscar",

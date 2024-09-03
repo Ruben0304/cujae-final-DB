@@ -1,4 +1,5 @@
 package database
+import modelos.Departamento
 import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.SQLException
@@ -14,9 +15,15 @@ object Database {
     }
 }
 
+
+
 fun main() {
+
+
     try {
-        Database.getConnection()
+        val connection: Connection = DriverManager.getConnection(
+            "jdbc:postgresql://aws-0-us-west-1.pooler.supabase.com:6543/postgres","postgres.wgfdmgsbsqflcgtecglw","@flowFerxxo2024"
+        )
         println("ok")
     }catch (e: SQLException) {
         println(e.message)

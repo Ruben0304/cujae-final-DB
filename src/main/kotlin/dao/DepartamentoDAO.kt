@@ -1,35 +1,43 @@
 package dao
 
 import database.Database
+import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.rpc
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
 import modelos.Departamento
+import repository.Supabase
 import java.sql.Connection
 
 
 object DepartamentoDAO {
-    suspend fun obtenerDepartamentosPorHospital(hospitalCodigo: String): List<Departamento> = withContext(Dispatchers.IO) {
-        val departamentos = mutableListOf<Departamento>()
-        val connection: Connection = Database.getConnection()
 
-        val query = "SELECT * FROM obtener_departamentos_por_hospital(?)"
+    @Serializable
+    data class ODPRequest(val p_hospital_codigo: String)
 
-        connection.prepareStatement(query).use { statement ->
-            statement.setString(1, hospitalCodigo)
-            val resultSet = statement.executeQuery()
+    suspend fun obtenerDepartamentosPorHospital(p_hospital_codigo: String): List<Departamento> = withContext(Dispatchers.IO) {
+        Supabase.coneccion.postgrest.rpc("obtener_departamentos_por_hospital", ODPRequest(p_hospital_codigo)).decodeList<Departamento>()
+    }
+    @Serializable
+    data class CrearDepartamentoRequest(
+        val p_codigo: String,
+        val p_nombre: String,
+        val p_hospital_codigo: String
+    )
 
-            while (resultSet.next()) {
-                departamentos.add(
-                    Departamento(
-                        codigo = resultSet.getString("departamento_codigo"),
-                        nombre = resultSet.getString("departamento_nombre"),
-                        hospitalCodigo = hospitalCodigo
-                    )
-                )
-            }
-        }
-
-        connection.close()
-        departamentos
+    suspend fun crearDepartamento(
+        codigo: String,
+        nombre: String,
+        hospitalCodigo: String
+    ) = withContext(Dispatchers.IO) {
+        Supabase.coneccion.postgrest.rpc(
+            "crear_departamento",
+            CrearDepartamentoRequest(
+                p_codigo = codigo,
+                p_nombre = nombre,
+                p_hospital_codigo = hospitalCodigo
+            )
+        )
     }
 }

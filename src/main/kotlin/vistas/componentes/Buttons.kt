@@ -21,7 +21,7 @@ import kotlinx.coroutines.delay
 
 
 @Composable
-fun SubmitButton() {
+fun SubmitButton( onClicked: () -> Unit) {
     var isSubmitted by remember { mutableStateOf(false) }
 
     val buttonColor by animateColorAsState(
@@ -49,6 +49,7 @@ fun SubmitButton() {
                 )
             )
             .clickable {
+                onClicked()
                 isSubmitted = true
 
             }
@@ -64,7 +65,7 @@ fun SubmitButton() {
                     tint = Color.White
                 )
             } else {
-                Text("Crear perfil", color = Color.White)
+                Text("Crear", color = Color.White)
             }
         }
     }

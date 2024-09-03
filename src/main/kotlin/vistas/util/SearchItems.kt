@@ -2,9 +2,7 @@ package vistas.util
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
-import vistas.Consulta
 import vistas.SearchItem
-import vistas.Turno
 import vistas.componentes.InfoItem
 
 object SearchItems {
@@ -127,22 +125,13 @@ object SearchItems {
     )
 
 
-    val turnos = listOf(
-        Turno("1", 60, 40, "Mario Alfonso Perez Alvarez"),
-        Turno("2", 30, 28, "Mario Alfonso Perez Alvarez"),
-        Turno("3", 20, 8),
-        Turno("1", 60, 40),
+//    val turnos = listOf(
+//        Turno("1", 60, 40, "Mario Alfonso Perez Alvarez"),
+//        Turno("2", 30, 28, "Mario Alfonso Perez Alvarez"),
+//        Turno("3", 20, 8),
+//        Turno("1", 60, 40),
+//
+//        )
 
-        )
 
-    val consultas = listOf(
-        Consulta("1", "Carlos Alberto", "Mario Sanchez"),
-        Consulta("1", "Carlos Alberto", "Mario Sanchez", false),
-        Consulta("1", "Carlos Alberto", "Mario Sanchez"),
-        Consulta("1", "Carlos Alberto", "Mario Sanchez", false),
-        Consulta("1", "Carlos Alberto", "Mario Sanchez"),
-        Consulta("1", "Carlos Alberto", "Mario Sanchez"),
-        Consulta("1", "Carlos Alberto", "Mario Sanchez", false),
-
-        )
 }

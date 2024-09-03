@@ -13,19 +13,24 @@ import com.apollographql.apollo3.ApolloClient
 import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.gotrue.providers.builtin.Email
 import io.github.jan.supabase.postgrest.*
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.put
+import modelos.Departamento
+import modelos.Hospital
 
 
 object Supabase {
 
-    const val supabaseUrl = "https://jhxtxukwfkcuzeqxgrtf.supabase.co"
+    const val supabaseUrl = "https://wgfdmgsbsqflcgtecglw.supabase.co"
     const val supabaseKey =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpoeHR4dWt3ZmtjdXplcXhncnRmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyNDg4MDk0OCwiZXhwIjoyMDQwNDU2OTQ4fQ.Ug9OAR-q7y-nGb6TdZ-oI9dFbS2NXZ7OHlMqik_lQFg"
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndnZmRtZ3Nic3FmbGNndGVjZ2x3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyNDk2NjU3NSwiZXhwIjoyMDQwNTQyNTc1fQ.44s9ndcvYmbaFE1iJWwvrFjdcK8Z0PjEihGVS-WP6Nk"
 
     // Inicialización del cliente Supabase como un lazy property
     val coneccion by lazy {
         createSupabaseClient(supabaseUrl, supabaseKey) {
-            defaultSerializer = KotlinXSerializer()
+            defaultSerializer = KotlinXSerializer(
+                json = Json { ignoreUnknownKeys = true  }
+            )
             install(Postgrest) {
                 defaultSchema = "public" // default: "public"
                 propertyConversionMethod = PropertyConversionMethod.SERIAL_NAME
@@ -36,56 +41,27 @@ object Supabase {
 }
 
 
+
 @Serializable
-data class Loco(val id: Int, val nombre: String)
+data class Hospital(val codigo: String, val nombre: String)
 
 
 fun main() = runBlocking {
 
     val supabaseClient = Supabase.coneccion
 
-    try {
-         supabaseClient.auth.signInWith(Email) {
-            email = "example@email3.com"
-            password = "secretpassword3"
-        }
-
-        // Verificar si se inició sesión correctamente
-        val session = supabaseClient.auth.currentSessionOrNull()
-        if (session != null) {
-           println(session)
-        } else {
-            println("Autenticación fallida: Credenciales incorrectas")
-        }
-    } catch (e: Exception) {
-        println("Error: ${e.message}$")
-
-    }
-
-//    val userWithEmail = supabase.auth.admin.createUserWithEmail {
-//        email = "example@email3.com"
-//        password = "secretpassword3"
-//        autoConfirm = true
-//    }
-
-//    try {
-//        // Actualiza el rol del usuario
-//        val updatedUser = supabase.auth.admin.updateUserById("534b968c-1bfd-4c5d-b6f4-01b8d26ede89") {
-//            role = "authenticated"
-//        }
-//        println("Usuario actualizado: $updatedUser")
-//    } catch (e: Exception) {
-//        println("Error al actualizar el usuario: ${e.message}")
-//    }
-
-////
-//    val session = supabase.auth.currentSessionOrNull()
-//    println(session)
-//        for (p in supabase.from("Loco").select().decodeList<Loco>())
+//    supabaseClient.from("departamento").insert(generarDepartamentosFicticios())
+//
+//        for (p in supabaseClient.from("departamento").select().decodeList<Departamento>())
 //        println(p.nombre)
 
-
-
-
+//    for (p in supabaseClient.from("hospital").select().decodeList<repository.Hospital>())
+//        println(p.codigo)
+//
+//
+//
+    for (p in supabaseClient.auth.admin.retrieveUsers())
+        println(p.email)
 
 }
+
