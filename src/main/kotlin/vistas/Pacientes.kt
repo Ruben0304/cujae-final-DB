@@ -12,21 +12,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import dao.PatientDAO
+import dao.cambiarEstadoEnRegistro
+import dao.marcarNoAtendido
 import global.Global
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import modelos.Patient
 import modelos.Registro
-import vistas.util.Colores
+import vistas.componentes.AceptCancelDialogManager
 import vistas.componentes.InfoItem
 import vistas.componentes.RotatingCard
-import vistas.componentes.SelectInputFieldFiltrado
 
 
 @Composable
-fun PatientListContent(unidadCodigo:String, departamentoCodigo: String) {
+fun PatientListContent(unidadCodigo: String, departamentoCodigo: String) {
     var pacientes by remember { mutableStateOf(listOf<Registro>()) }
     var isLoading by remember { mutableStateOf(true) }
     var selectedHospital by remember { mutableStateOf<String?>(null) }
@@ -44,8 +42,11 @@ fun PatientListContent(unidadCodigo:String, departamentoCodigo: String) {
     // Simular carga de doctores
     LaunchedEffect(key1 = true) {
         coroutineScope.launch {
-            if (Global.selectedHospital != null )
-                  pacientes = PatientDAO.obtenerPacientesConEstadoYCausa(unidadCodigo,departamentoCodigo,Global.selectedHospital)
+            if (Global.selectedHospital != null)
+                pacientes = PatientDAO.obtenerPacientesConEstadoYCausa(
+                    unidadCodigo, departamentoCodigo,
+                    Global.selectedHospital!!
+                )
             isLoading = false
         }
     }
@@ -65,50 +66,50 @@ fun PatientListContent(unidadCodigo:String, departamentoCodigo: String) {
             modifier = Modifier.padding(16.dp),
             color = Color.White
         )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .zIndex(2f)
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Box(modifier = Modifier.weight(1f)) {
-                SelectInputFieldFiltrado(
-                    value = selectedHospital ?: "Seleccionar",
-                    onValueChange = {
-                        selectedHospital = it
-                        selectedDepartamento = null
-                        selectedUnidad = null
-                    },
-                    label = "Hospital",
-                    options = listOf("Hospital A", "Hospital B", "Hospital C"),
-                    enabled = true
-                )
-            }
-            Spacer(modifier = Modifier.width(15.dp))
-            Box(modifier = Modifier.weight(1f)) {
-                SelectInputFieldFiltrado(
-                    value = selectedDepartamento ?: "Seleccionar",
-                    onValueChange = {
-                        selectedDepartamento = it
-                        selectedUnidad = null
-                    },
-                    label = "Departamento",
-                    options = listOf("Cardiología", "Neurología", "Pediatría"),
-                    enabled = selectedHospital != null
-                )
-            }
-            Spacer(modifier = Modifier.width(15.dp))
-            Box(modifier = Modifier.weight(1f)) {
-                SelectInputFieldFiltrado(
-                    value = selectedUnidad ?: "Seleccionar",
-                    onValueChange = { selectedUnidad = it },
-                    label = "Unidad",
-                    options = listOf("Unidad A", "Unidad B", "Unidad C"),
-                    enabled = selectedHospital != null && selectedDepartamento != null
-                )
-            }
-        }
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .zIndex(2f)
+//                .padding(16.dp),
+//            horizontalArrangement = Arrangement.SpaceBetween
+//        ) {
+//            Box(modifier = Modifier.weight(1f)) {
+//                SelectInputFieldFiltrado(
+//                    value = selectedHospital ?: "Seleccionar",
+//                    onValueChange = {
+//                        selectedHospital = it
+//                        selectedDepartamento = null
+//                        selectedUnidad = null
+//                    },
+//                    label = "Hospital",
+//                    options = listOf("Hospital A", "Hospital B", "Hospital C"),
+//                    enabled = true
+//                )
+//            }
+//            Spacer(modifier = Modifier.width(15.dp))
+//            Box(modifier = Modifier.weight(1f)) {
+//                SelectInputFieldFiltrado(
+//                    value = selectedDepartamento ?: "Seleccionar",
+//                    onValueChange = {
+//                        selectedDepartamento = it
+//                        selectedUnidad = null
+//                    },
+//                    label = "Departamento",
+//                    options = listOf("Cardiología", "Neurología", "Pediatría"),
+//                    enabled = selectedHospital != null
+//                )
+//            }
+//            Spacer(modifier = Modifier.width(15.dp))
+//            Box(modifier = Modifier.weight(1f)) {
+//                SelectInputFieldFiltrado(
+//                    value = selectedUnidad ?: "Seleccionar",
+//                    onValueChange = { selectedUnidad = it },
+//                    label = "Unidad",
+//                    options = listOf("Unidad A", "Unidad B", "Unidad C"),
+//                    enabled = selectedHospital != null && selectedDepartamento != null
+//                )
+//            }
+//        }
 
         if (isLoading) {
             Box(
@@ -132,21 +133,88 @@ fun PatientListContent(unidadCodigo:String, departamentoCodigo: String) {
                         "no atendido" -> estadoColores["no atendido"]!!
                         else -> listOf(Color.Gray, Color.DarkGray)  // Color por defecto si no coincide
                     }
-                    var items = mutableListOf<InfoItem>(
-                        InfoItem(Icons.Rounded.CalendarMonth, "Fecha de nacimiento", paciente.fecha_nacimiento) ,
+                    var items = mutableListOf(
+                        InfoItem(Icons.Rounded.CalendarMonth, "Fecha de nacimiento", paciente.fecha_nacimiento),
                         InfoItem(Icons.Rounded.Map, "Dirección", paciente.direccion),
                     )
-                    if(paciente.estado == "no atendido" && paciente.causa_no_atencion != null)
-                        items.add( InfoItem(Icons.Rounded.Map, "", paciente.causa_no_atencion),)
+                    if (paciente.estado == "no atendido" && paciente.causa_no_atencion != null)
+                        items.add(InfoItem(Icons.Rounded.Map, "", paciente.causa_no_atencion))
 
                     RotatingCard(
-                        frontGradient =  frontGradient,
+                        frontGradient = frontGradient,
                         labelText = paciente.estado.replaceFirstChar { it.uppercase() },
                         avatar = painterResource("Untitled.png"),
                         titleText = paciente.nombre + " " + paciente.apellidos,
                         subtitleText = paciente.numero_historia_clinica,
                         infoItems = items
-                    )
+                    ) {
+                        if (paciente.estado == "pendiente") {
+                            GlassmorphismDialogManager.showDialog(
+                                listOf(
+                                    DialogButton(
+                                        "Alta",
+                                        "✅"
+                                    ) {
+                                        coroutineScope.launch {
+                                            cambiarEstadoEnRegistro(
+                                                paciente.registro_id,
+                                                paciente.unidad_codigo,
+                                                paciente.departamento_codigo,
+                                                paciente.hospital_codigo,
+                                                "alta"
+                                            )
+                                            GlassmorphismDialogManager.hideDialog()
+                                        }
+                                    },
+                                    DialogButton(
+                                        "Fallecido",
+                                        "💀"
+                                    ) { coroutineScope.launch {
+                                        cambiarEstadoEnRegistro(
+                                            paciente.registro_id,
+                                            paciente.unidad_codigo,
+                                            paciente.departamento_codigo,
+                                            paciente.hospital_codigo,
+                                            "fallecido"
+                                        )
+                                    } },
+                                    DialogButton("Atendido", "🤝") { coroutineScope.launch {
+                                        cambiarEstadoEnRegistro(
+                                            paciente.registro_id,
+                                            paciente.unidad_codigo,
+                                            paciente.departamento_codigo,
+                                            paciente.hospital_codigo,
+                                            "atendido"
+                                        )
+                                        GlassmorphismDialogManager.hideDialog()
+                                    } },
+                                    DialogButton("N.A", "❌") {
+                                        GlassmorphismDialogManager.hideDialog()
+
+                                        AceptCancelDialogManager.showDialog(
+                                            textoP = "Escriba la causa",
+                                            acceptActionP = { causa ->
+                                                coroutineScope.launch {
+                                                    marcarNoAtendido(
+                                                        paciente.registro_id,
+                                                        paciente.unidad_codigo,
+                                                        paciente.departamento_codigo,
+                                                        paciente.hospital_codigo,
+                                                        causa // Aquí se pasa el valor del TextField como `causa`
+                                                    )
+                                                }
+                                            },
+                                            haveText = true
+                                        )
+                                    }
+
+                                )
+                            )
+                        }
+                        else {
+                            AceptCancelDialogManager.showDialog("Solo se puede modificar pendientes 😐", {})
+                        }
+                    }
                 }
             }
         }

@@ -13,6 +13,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import vistas.*
 import vistas.login.LoginScreen
+import vistas.login.RegisterScreen
 
 @Composable
 fun EstablecerRutas(navController: NavHostController) {
@@ -41,6 +42,7 @@ fun EstablecerRutas(navController: NavHostController) {
         composable("pacientesHospital") { PacientesHospital() }
         composable("ia") { ConsultaIA() }
         composable("crear") { CreateFormScreen() }
+        composable("register") { RegisterScreen() }
         composable("departamentos") { DepartamentoTable(navController) }
         composable(
             "unidades/{departamentoCodigo}",

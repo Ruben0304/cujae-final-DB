@@ -1,14 +1,12 @@
 package dao
 
-import dao.UnidadDAO.OUXHDRequest
-import database.Database
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.rpc
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import modelos.Doctor
-import repository.Supabase
+import supabase.Supabase
 
 
 object DoctorDAO {

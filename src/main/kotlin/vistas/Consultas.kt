@@ -47,7 +47,7 @@ fun ConsultaTable(unidad: String, departamento: String, numeroTurno: Int) {
     LaunchedEffect(key1 = true) {
         coroutineScope.launch {
             if (Global.selectedHospital != null)
-                consultas = ConsultaDAO.getConsultasTurno(unidad, departamento, Global.selectedHospital, numeroTurno)
+                consultas = ConsultaDAO.getConsultasTurno(unidad, departamento, Global.selectedHospital!!, numeroTurno)
             isLoading = false
         }
     }

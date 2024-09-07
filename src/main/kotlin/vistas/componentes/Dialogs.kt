@@ -1,6 +1,5 @@
 package vistas.componentes
-import androidx.compose.animation.*
-import androidx.compose.animation.core.*
+import DialogButton
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -9,11 +8,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.WindowState
-import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.material.icons.rounded.Badge
 import androidx.compose.material.icons.rounded.CalendarToday
 import androidx.compose.material.icons.rounded.Email
@@ -21,25 +18,15 @@ import androidx.compose.material.icons.rounded.Phone
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import vistas.util.Colores
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
 
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.rounded.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.compose.animation.core.tween
 import androidx.compose.material.icons.Icons
+import vistas.colores.doctorGradient
 
 @Composable
 fun CustomMaterial3Dialog(
@@ -134,7 +121,7 @@ fun MainContent() {
                 onDismissRequest = { showDialog = false }
             ) {
                 RotatingCard(
-                    frontGradient = Colores.doctorGradient,
+                    frontGradient = doctorGradient,
                     labelText = "Doctor",
                     avatar = painterResource("a.jpg"),
                     titleText = "Akkjdkjdkjddkj",
@@ -145,7 +132,21 @@ fun MainContent() {
                         InfoItem(Icons.Rounded.CalendarToday, "Años de exp.", "doctor"),
                         InfoItem(Icons.Rounded.Email, "Contacto", "doctor.datosContacto")
                     )
-                )
+                ){
+                    GlassmorphismDialogManager.showDialog(
+                        listOf(
+                            DialogButton(
+                                "Aceptar",
+                                "✅"
+                            ) { println("Aceptar clicked"); GlassmorphismDialogManager.hideDialog() },
+                            DialogButton(
+                                "Cancelar",
+                                "❌"
+                            ) { println("Cancelar clicked"); GlassmorphismDialogManager.hideDialog() },
+                            DialogButton("Más información", "ℹ️") { println("Más información clicked") }
+                        )
+                    )
+                }
             }
         }
     }

@@ -4,6 +4,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
 import vistas.componentes.MacOSTitleBar
+import vistas.componentes.ToastHost
 import vistas.login.DefaultPreview
 import vistas.login.LoginScreen
 import vistas.login.StartLoading
@@ -23,6 +24,8 @@ fun main() = application {
         Column {
             MacOSTitleBar(windowState)
             StartLoading()
+//            GlassmorphismDialogManager.DialogHost()
+            ToastHost()
         }
     }
 }

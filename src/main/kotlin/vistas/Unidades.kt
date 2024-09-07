@@ -57,7 +57,7 @@ fun UnidadTable(
         coroutineScope.launch {
             if (Global.selectedHospital != null)
                 unidades =
-                    UnidadDAO.obtenerUnidadesPorHospitalYDepartamento(Global.selectedHospital, departamentoCodigo)
+                    UnidadDAO.obtenerUnidadesPorHospitalYDepartamento(Global.selectedHospital!!, departamentoCodigo)
             isLoading = false
         }
     }

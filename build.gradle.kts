@@ -29,7 +29,6 @@ dependencies {
     implementation(compose.material3)
     // https://mvnrepository.com/artifact/io.coil-kt/coil-compose
     // https://mvnrepository.com/artifact/io.coil-kt.coil3/coil-compose
-    implementation("io.coil-kt.coil3:coil-compose:3.0.0-alpha09")
     //supabase
     implementation(platform("io.github.jan-tennert.supabase:bom:2.6.0"))
     implementation("io.github.jan-tennert.supabase:postgrest-kt")
@@ -39,7 +38,11 @@ dependencies {
     implementation("io.ktor:ktor-client-cio:2.3.12")
     implementation("io.github.jan-tennert.supabase:apollo-graphql:2.6.0")
     implementation("org.jetbrains.androidx.navigation:navigation-compose:2.7.0-alpha07")
-    implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
+    // https://mvnrepository.com/artifact/br.com.devsrsouza.compose.icons/font-awesome
+    implementation("br.com.devsrsouza.compose.icons:font-awesome:1.1.0")
+
+
+
 
 
 

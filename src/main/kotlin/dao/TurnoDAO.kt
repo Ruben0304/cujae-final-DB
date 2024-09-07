@@ -6,9 +6,8 @@ import io.github.jan.supabase.postgrest.rpc
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import modelos.Hospital
 import modelos.Turno
-import repository.Supabase
+import supabase.Supabase
 
 object TurnoDAO {
     suspend fun getTurnosUnidad(unidadCodigo: String, departamentoCodigo: String, hospital: String): List<Turno> =

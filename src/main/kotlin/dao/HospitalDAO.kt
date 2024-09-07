@@ -1,21 +1,27 @@
 package dao
 
-import database.Database
+import dao.DoctorDAO.MURequest
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.rpc
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
+import modelos.Doctor
 import modelos.Hospital
-import repository.Supabase
-import java.sql.Connection
-import java.sql.SQLException
+import modelos.HospitalNombres
+import supabase.Supabase
 
 object HospitalDAO {
 
-    suspend fun getAllHospitals() : List<Hospital> = withContext(Dispatchers.IO) {
-        Supabase.coneccion.from("hospital").select().decodeList<Hospital>()
+    suspend fun getAllHospitals(): List<Hospital> {
+        return Supabase.coneccion.postgrest.rpc("resumen_por_hospitales")
+            .decodeList<Hospital>()
+    }
+
+    suspend fun getHospitals(): List<HospitalNombres> {
+        return Supabase.coneccion.from("hospital").select()
+            .decodeList<HospitalNombres>()
     }
 
 

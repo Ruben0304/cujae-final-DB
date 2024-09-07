@@ -1,14 +1,12 @@
 package dao
 
-import database.Database
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.rpc
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import modelos.Departamento
-import repository.Supabase
-import java.sql.Connection
+import supabase.Supabase
 
 
 object DepartamentoDAO {

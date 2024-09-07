@@ -42,7 +42,7 @@ fun DepartamentoTable(navController: NavHostController) {
     LaunchedEffect(key1 = true) {
         coroutineScope.launch {
             if (Global.selectedHospital != null)
-                departamentos = DepartamentoDAO.obtenerDepartamentosPorHospital(Global.selectedHospital)
+                departamentos = DepartamentoDAO.obtenerDepartamentosPorHospital(Global.selectedHospital!!)
             isLoading = false
         }
     }

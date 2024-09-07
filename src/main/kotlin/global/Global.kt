@@ -1,5 +1,7 @@
 package global
 
+import io.github.jan.supabase.gotrue.user.UserInfo
+
 object Global{
-    val selectedHospital: String? = "H003"
+    var selectedHospital: String? = "H001"
 }

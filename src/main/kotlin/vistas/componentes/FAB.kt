@@ -4,6 +4,7 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -12,6 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import compose.icons.FontAwesomeIcons
+import compose.icons.fontawesomeicons.Regular
 
 
 @Composable
@@ -26,7 +29,7 @@ fun AnimatedFAB(
     )
 
     val icon by remember(expanded) {
-        derivedStateOf { if (expanded) Icons.Outlined.Add else Icons.Outlined.Menu }
+        derivedStateOf { if (expanded) Icons.Outlined.Add else Icons.Outlined.Apps }
     }
 
     Box(

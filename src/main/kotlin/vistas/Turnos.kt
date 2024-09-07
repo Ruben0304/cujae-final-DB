@@ -43,7 +43,7 @@ fun TurnoTable(unidad: String, departamento: String, onNavigateToConsultas: (Str
     LaunchedEffect(key1 = true) {
         coroutineScope.launch {
             if (Global.selectedHospital != null)
-                turnos = TurnoDAO.getTurnosUnidad(unidad, departamento, Global.selectedHospital)
+                turnos = TurnoDAO.getTurnosUnidad(unidad, departamento, Global.selectedHospital!!)
             isLoading = false
         }
     }

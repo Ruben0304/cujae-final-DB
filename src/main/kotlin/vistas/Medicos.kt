@@ -1,5 +1,6 @@
 package vistas
 
+import DialogButton
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -18,7 +19,7 @@ import dao.DoctorDAO
 import global.Global
 import kotlinx.coroutines.launch
 import modelos.Doctor
-import vistas.util.Colores
+import vistas.colores.doctorGradient
 import vistas.componentes.InfoItem
 import vistas.componentes.RotatingCard
 
@@ -38,11 +39,13 @@ fun DoctorListContent(departamentoId: String? = null, unidadCodigo: String? = nu
         coroutineScope.launch {
             if (Global.selectedHospital != null)
                 if (unidadCodigo != null && departamentoId != null)
-                    doctors = DoctorDAO.listar_medicos_por_unidad(unidadCodigo, departamentoId, Global.selectedHospital)
+                    doctors = DoctorDAO.listar_medicos_por_unidad(unidadCodigo, departamentoId,
+                        Global.selectedHospital!!
+                    )
                 else if (departamentoId != null)
-                    doctors = DoctorDAO.listar_medicos_por_departamento(departamentoId, Global.selectedHospital)
+                    doctors = DoctorDAO.listar_medicos_por_departamento(departamentoId, Global.selectedHospital!!)
                 else
-                    doctors = DoctorDAO.listar_medicos_por_hospital(Global.selectedHospital)
+                    doctors = DoctorDAO.listar_medicos_por_hospital(Global.selectedHospital!!)
             isLoading = false
         }
     }
@@ -153,7 +156,7 @@ fun DoctorListContent(departamentoId: String? = null, unidadCodigo: String? = nu
             ) {
                 items(filteredDoctors) { doctor ->
                     RotatingCard(
-                        frontGradient = Colores.doctorGradient,
+                        frontGradient = doctorGradient,
                         labelText = "Doctor",
                         avatar = painterResource("a.jpg"),
                         titleText = doctor.nombre + " " + doctor.apellidos,
@@ -164,7 +167,21 @@ fun DoctorListContent(departamentoId: String? = null, unidadCodigo: String? = nu
                             InfoItem(Icons.Rounded.CalendarToday, "Años de exp.", doctor.aniosExperiencia.toString()),
                             InfoItem(Icons.Rounded.Email, "Contacto", doctor.datosContacto)
                         )
-                    )
+                    ){
+                        GlassmorphismDialogManager.showDialog(
+                            listOf(
+                                DialogButton(
+                                    "Crear cuenta",
+                                    "✅"
+                                ) { println("Aceptar clicked"); GlassmorphismDialogManager.hideDialog() },
+                                DialogButton(
+                                    "Editar",
+                                    "❌"
+                                ) { println("Cancelar clicked"); GlassmorphismDialogManager.hideDialog() },
+                                DialogButton("Más información", "ℹ️") { println("Más información clicked") }
+                            )
+                        )
+                    }
                 }
             }
         }

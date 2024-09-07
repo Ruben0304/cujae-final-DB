@@ -1,5 +1,6 @@
 package vistas.componentes
 
+import DialogButton
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
@@ -7,12 +8,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.More
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.MoreHoriz
 
 
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -38,7 +41,8 @@ fun RotatingCard(
     avatar: Painter,
     titleText: String,
     subtitleText: String,
-    infoItems: List<InfoItem>
+    infoItems: List<InfoItem>,
+    onMoreClick: () -> Unit
 ) {
     var isRotated by remember { mutableStateOf(false) }
     val rotation by animateFloatAsState(
@@ -66,7 +70,7 @@ fun RotatingCard(
                     .clip(RoundedCornerShape(5.dp))
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
-                    FrontContent(frontGradient, labelText, avatar, titleText, subtitleText)
+                    FrontContent(frontGradient, labelText, avatar, titleText, subtitleText,onMoreClick)
                 }
             }
         } else {
@@ -81,7 +85,8 @@ fun FrontContent(
     labelText: String,
     avatar: Painter,
     titleText: String,
-    subtitleText: String
+    subtitleText: String,
+    onMoreClick: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -145,20 +150,16 @@ fun FrontContent(
         Row(
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .padding(end = 8.dp, top = 8.dp),
+                .padding(end = 8.dp, top = 8.dp)
+                .clickable { onMoreClick() },
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.Edit,
-                contentDescription = "Editar",
-                tint = Color(50,91,171),
-                modifier = Modifier.size(16.dp)
-            )
-            Icon(
-                imageVector = Icons.Default.Delete,
-                contentDescription = "Eliminar",
-                tint = Color(201, 79, 79),
-                modifier = Modifier.size(16.dp)
+                imageVector = Icons.Outlined.MoreHoriz,
+                contentDescription = "Acciones",
+                tint = Color(255,255,255),
+                modifier = Modifier.size(28.dp)
+
             )
         }
     }

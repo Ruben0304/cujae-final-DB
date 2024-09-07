@@ -1,5 +1,6 @@
 package vistas
 
+import GlassmorphismDialogManager
 import HospitalListContent
 import androidx.compose.animation.core.tween
 import androidx.compose.desktop.ui.tooling.preview.Preview
@@ -15,6 +16,8 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.graphics.Brush
 
 import androidx. compose.ui.window.*
 import vistas.componentes.AnimatedFAB
@@ -24,15 +27,35 @@ import vistas.login.LoginScreen
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import vistas.colores.backgroundGradient
+import vistas.componentes.AceptCancelDialog
+import vistas.componentes.AceptCancelDialogManager
 import vistas.nav.EstablecerRutas
-
 
 @Composable
 fun DashboardApp() {
-    val navController = rememberNavController()  // Crea el NavController
+    val navController = rememberNavController()
     var fabExpanded by remember { mutableStateOf(false) }
+    val isDialogOpen by remember { derivedStateOf { GlassmorphismDialogManager.isDialogOpen } }
+    val isDialogOpen2 by remember { derivedStateOf { AceptCancelDialogManager.isDialogOpen } }
 
-    Box(modifier = Modifier.fillMaxSize().background(Color(0xFF121212))) {
+    // Animate the blur value
+    val blurRadius by animateDpAsState(
+        targetValue = if (isDialogOpen || isDialogOpen2) 15.dp else 0.dp,
+        animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing)
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+//            .background(Color(0xFF121212))
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = backgroundGradient
+                )
+            )
+            .blur(blurRadius)
+    ) {
         Row(modifier = Modifier.fillMaxSize()) {
             // Sidebar
             SideBar(navController)
@@ -41,23 +64,24 @@ fun DashboardApp() {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color(0xFF121212))
+//                    .background(Color(0xFF121212))
+                    .background(
+                        Color.Transparent
+                    )
                     .padding(16.dp)
             ) {
                 // Configura el NavHost con las rutas
                 EstablecerRutas(navController)
             }
         }
-
-        // Overlay oscuro
-        if (fabExpanded) {
+        if (fabExpanded || isDialogOpen || isDialogOpen2) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color.Black.copy(alpha = 0.5f))
                     .alpha(
                         animateFloatAsState(
-                            targetValue = if (fabExpanded) 1f else 0f,
+                            targetValue = if (fabExpanded || isDialogOpen || isDialogOpen2) 1f else 0f,
                             animationSpec = tween(300)
                         ).value
                     )
@@ -69,11 +93,15 @@ fun DashboardApp() {
             expanded = fabExpanded,
             onExpandedChange = { fabExpanded = it },
             onItemSelected = { route ->
-                fabExpanded = false  // Colapsar el FAB después de seleccionar
+                fabExpanded = false
                 navController.navigate(route)
             }
         )
     }
+
+    // Place the DialogHost outside the blurred content
+    GlassmorphismDialogManager.DialogHost()
+    AceptCancelDialogManager.DialogHost()
 }
 
 fun main() = application {

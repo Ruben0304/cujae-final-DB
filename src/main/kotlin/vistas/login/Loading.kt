@@ -15,19 +15,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import io.ktor.network.sockets.*
+import io.github.jan.supabase.gotrue.auth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
-import repository.Supabase
-import vistas.componentes.ShowToast
+import supabase.Supabase
 import vistas.componentes.ToastHost
 import vistas.componentes.ToastManager
 import vistas.componentes.ToastType
 
 import java.net.InetSocketAddress
 import java.net.Socket
-import java.net.SocketAddress
 
 @Composable
 fun StartLoading() {
@@ -41,21 +39,10 @@ fun StartLoading() {
     LaunchedEffect(Unit) {
         delay(1000) // 1 second delay
         showProgress = true
-        delay(1500)
-        while (true) {
-            if (isInternetAvailable()) {
-                showProgress = false
-                isLoading = false
-                internet = true
-                break
-            } else {
-                internet = false
-                showProgress = false
-                isLoading = true
-                showToast = true
-                delay(1000) // Wait 3 seconds before retrying
-            }
-        }
+//        delay(1000)
+       Supabase.coneccion.auth.admin.retrieveUsers()
+//        auth.Auth.cambiar_rol("d1bcbe10-04bb-4386-a6b3-5d8b5b440f6f","service_role")
+        isLoading = false
     }
 
     Surface(

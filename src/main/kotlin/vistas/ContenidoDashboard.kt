@@ -22,7 +22,7 @@ import global.Global
 import kotlinx.coroutines.launch
 
 
-@OptIn(ExperimentalMaterialApi::class)
+
 @Composable
 fun DashboardContent() {
     val coroutineScope = rememberCoroutineScope()
@@ -45,7 +45,7 @@ fun DashboardContent() {
     LaunchedEffect(key1 = true) {
         coroutineScope.launch {
             if (Global.selectedHospital != null) {
-                val conteoPacientes = obtenerConteoPacientesPorEstado(Global.selectedHospital)
+                val conteoPacientes = obtenerConteoPacientesPorEstado(Global.selectedHospital!!)
 
                 noAtendidos = conteoPacientes.no_atendidos
                 atendidos = conteoPacientes.atendidos
@@ -54,6 +54,7 @@ fun DashboardContent() {
                 dadosDeAlta = conteoPacientes.dados_de_alta
                 cantidadDepartamentos = conteoPacientes.cantidad_departamentos
                 cantidadUnidades = conteoPacientes.cantidad_unidades
+
             }
             isLoading = false
         }
@@ -65,7 +66,7 @@ fun DashboardContent() {
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
-            .background(Color(0xFF121212))
+            .background(Color.Transparent)
     ) {
         if (isLoading) {
             Box(
@@ -81,49 +82,8 @@ fun DashboardContent() {
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(bottom = 16.dp)
             ) {
-//            Text("Filtrar por:", color = Color.White)
-//            Spacer(modifier = Modifier.width(8.dp))
-//            ExposedDropdownMenuBox(
-//                expanded = expanded,
-//                onExpandedChange = { expanded = !expanded }
-//            ) {
-//                TextField(
-//                    value = selectedFilter,
-//                    onValueChange = {},
-//                    readOnly = true,
-//                    trailingIcon = {
-//                        Icon(
-//                            imageVector = Icons.Default.ArrowDropDown,
-//                            contentDescription = "Expandir",
-//                            tint = Color.White
-//                        )
-//                    },
-//                    colors = ExposedDropdownMenuDefaults.textFieldColors(
-//                        backgroundColor = Color(0xFF1E1E1E),
-//                        textColor = Color.White
 //
-//                    ),
-//                    modifier = Modifier.fillMaxWidth().background(Color(0xFF1E1E1E))
-//                )
-//                ExposedDropdownMenu(
-//                    expanded = expanded,
-//                    onDismissRequest = { expanded = false },
-//                ) {
-//                    filterOptions.forEach { filter ->
-//                        DropdownMenuItem(onClick = {
-//                            selectedFilter = filter
-//                            expanded = false
-//                        }) {
-//                            Text(filter, color = Color.Black)
-//                        }
-//                    }
-//                }
-//            }
             }
-//
-//
-//        Spacer(modifier = Modifier.height(16.dp))
-
 
             Row(
                 modifier = Modifier
@@ -164,24 +124,13 @@ fun DashboardContent() {
                         1f - fallecidos.toFloat() / (noAtendidos.toFloat() + atendidos.toFloat()),
                         Color(0xff52ad6c)
                     )
-//            Spacer(modifier = Modifier.width(10.dp))
+//
                     AnimatedProgressCard(
                         "Muertos",
                         fallecidos.toFloat() / (noAtendidos.toFloat() + atendidos.toFloat()),
                         Color(0xff73122c)
                     )
                 }
-
-//        FloatingActionButtonWithMenu()
-
-
-//        PdfGeneratorCard()
-//
-//        Spacer(modifier = Modifier.height(16.dp))
-//
-//        AnimatedDataList(listOf("Paciente 1", "Paciente 2", "Paciente 3"))
-//
-//        FloatingActionButtonWithMenu()
 
         }
     }

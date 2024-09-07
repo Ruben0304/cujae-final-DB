@@ -1,5 +1,6 @@
 package vistas
 
+import DialogButton
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -14,17 +15,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import dao.PatientDAO
 import global.Global
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import modelos.Patient
 import modelos.PatientTable
-import vistas.util.Colores
+import vistas.colores.patientGradient
 import vistas.componentes.InfoItem
 import vistas.componentes.RotatingCard
-import vistas.componentes.SelectInputFieldFiltrado
 
 
 @Composable
@@ -39,7 +36,7 @@ fun PacientesHospital() {
     LaunchedEffect(key1 = true) {
         coroutineScope.launch {
             if (Global.selectedHospital != null )
-                pacientes = PatientDAO.getPacientesPorHospital(Global.selectedHospital)
+                pacientes = PatientDAO.getPacientesPorHospital(Global.selectedHospital!!)
             isLoading = false
         }
     }
@@ -78,7 +75,7 @@ fun PacientesHospital() {
             ) {
                 items(pacientes) { paciente ->
                     RotatingCard(
-                        frontGradient = Colores.patientGradient,
+                        frontGradient = patientGradient,
                         labelText = "Paciente",
                         avatar = painterResource("Untitled.png"),
                         titleText = paciente.nombre + " " + paciente.apellidos,
@@ -87,7 +84,21 @@ fun PacientesHospital() {
                             InfoItem(Icons.Rounded.Map, "Dirección", paciente.direccion),
                             InfoItem(Icons.Rounded.CalendarToday, "Fecha de Nacimiento", paciente.fechaNacimiento),
                         )
-                    )
+                    ){
+                        GlassmorphismDialogManager.showDialog(
+                            listOf(
+                                DialogButton(
+                                    "Aceptar",
+                                    "✅"
+                                ) { println("Aceptar clicked"); GlassmorphismDialogManager.hideDialog() },
+                                DialogButton(
+                                    "Cancelar",
+                                    "❌"
+                                ) { println("Cancelar clicked"); GlassmorphismDialogManager.hideDialog() },
+                                DialogButton("Más información", "ℹ️") { println("Más información clicked") }
+                            )
+                        )
+                    }
                 }
             }
         }

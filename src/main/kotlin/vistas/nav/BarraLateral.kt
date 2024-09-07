@@ -80,6 +80,7 @@ fun SideBar(navController: NavHostController) {
 
         Spacer(modifier = Modifier.weight(1f))
 
+        SideBarMenuItem("Crear cuenta", Icons.Default.ManageAccounts, navController) { navController.navigate("register") }
         SideBarMenuItem("Cerrar Sesión", Icons.AutoMirrored.Filled.Logout, navController) { navController.navigate("login") }
     }
 }

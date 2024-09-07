@@ -1,5 +1,6 @@
 package vistas
 
+import DialogButton
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -21,14 +22,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import dao.SearchDAO
 import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import modelos.Consulta
-import modelos.Turno
-import vistas.util.Colores
+import vistas.colores.doctorGradient
+import vistas.colores.hospitalGradient
+import vistas.colores.patientGradient
 import vistas.componentes.InfoItem
 import vistas.componentes.RotatingCard
-import vistas.util.SearchItems
 
 
 data class SearchItem(
@@ -122,7 +121,21 @@ fun SearchScreen() {
                                 titleText = item.name,
                                 subtitleText = item.id,
                                 infoItems = item.infoItems,
-                            )
+                            ){
+                                GlassmorphismDialogManager.showDialog(
+                                    listOf(
+                                        DialogButton(
+                                            "Aceptar",
+                                            "✅"
+                                        ) { println("Aceptar clicked"); GlassmorphismDialogManager.hideDialog() },
+                                        DialogButton(
+                                            "Cancelar",
+                                            "❌"
+                                        ) { println("Cancelar clicked"); GlassmorphismDialogManager.hideDialog() },
+                                        DialogButton("Más información", "ℹ️") { println("Más información clicked") }
+                                    )
+                                )
+                            }
                         }
                     }
                 }
@@ -298,7 +311,7 @@ fun mapResultsToSearchItems(
                 type = "Hospital",
                 name = it.hospital_nombre,
                 id = it.hospital_codigo,
-                gradient = Colores.hospitalGradient,
+                gradient = hospitalGradient,
                 avatar = "Hospital Sign.png",
                 infoItems = listOf(
 //                    InfoItem(Icons.Rounded.Badge, "Número de Historia", "67890"),
@@ -315,7 +328,7 @@ fun mapResultsToSearchItems(
                 type = "Doctor",
                 name = "${it.medico_nombre} ${it.medico_apellidos}",
                 id = it.especialidad,
-                gradient = Colores.doctorGradient,
+                gradient = doctorGradient,
                 avatar = "a.jpg",
                 infoItems = listOf(
                     InfoItem(Icons.Rounded.Badge, "Codigo", it.medico_codigo),
@@ -329,7 +342,7 @@ fun mapResultsToSearchItems(
                 type = "Paciente",
                 name = "${it.paciente_nombre} ${it.paciente_apellidos}",
                 id = it.paciente_numero_historia_clinica,
-                gradient = Colores.patientGradient,
+                gradient = patientGradient,
                 avatar = "Untitled.png",
                 infoItems = listOf(
                     InfoItem(Icons.Rounded.Map, "Dirección", it.direccion),

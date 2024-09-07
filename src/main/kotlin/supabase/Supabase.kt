@@ -1,22 +1,16 @@
-package repository
+package supabase
 
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.gotrue.Auth
-import io.github.jan.supabase.graphql.GraphQL
-import io.github.jan.supabase.graphql.graphql
 import io.github.jan.supabase.serializer.KotlinXSerializer
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 
-import com.apollographql.apollo3.api.Query
-import com.apollographql.apollo3.ApolloClient
-import io.github.jan.supabase.gotrue.auth
-import io.github.jan.supabase.gotrue.providers.builtin.Email
+import dao.HospitalDAO
+import dao.cambiarEstadoEnRegistro
+import dao.marcarNoAtendido
 import io.github.jan.supabase.postgrest.*
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.put
-import modelos.Departamento
-import modelos.Hospital
 
 
 object Supabase {
@@ -50,18 +44,19 @@ fun main() = runBlocking {
 
     val supabaseClient = Supabase.coneccion
 
-//    supabaseClient.from("departamento").insert(generarDepartamentosFicticios())
-//
-//        for (p in supabaseClient.from("departamento").select().decodeList<Departamento>())
-//        println(p.nombre)
 
-//    for (p in supabaseClient.from("hospital").select().decodeList<repository.Hospital>())
-//        println(p.codigo)
-//
-//
-//
-    for (p in supabaseClient.auth.admin.retrieveUsers())
-        println(p.email)
+   auth.Auth.login("b@b.com","b")
+//    auth.Auth.cambiar_rol("d1bcbe10-04bb-4386-a6b3-5d8b5b440f6f","medico")
+//    println(auth.Auth.session_actual())
+//    for (p in HospitalDAO.getAllHospitals())
+//        println(p.nombre)
+    try{
+        cambiarEstadoEnRegistro(54,"U002","D002","H001","alta")
+        println("ok")
+         }
+    catch(e: Exception){
+        println(e.message)
+    }
 
 }
 

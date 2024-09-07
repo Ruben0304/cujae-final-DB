@@ -1,19 +1,15 @@
 package dao
 
-import database.Database
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
-import io.github.jan.supabase.postgrest.query.Count
 import io.github.jan.supabase.postgrest.rpc
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import modelos.Doctor
 import modelos.Patient
 import modelos.PatientTable
 import modelos.Registro
-import repository.Supabase
-import java.sql.Connection
+import supabase.Supabase
 
 object PatientDAO {
 

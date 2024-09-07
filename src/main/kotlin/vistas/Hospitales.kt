@@ -5,6 +5,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MedicalServices
+import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -13,11 +15,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import compose.icons.FontAwesomeIcons
+import compose.icons.fontawesomeicons.Solid
+import compose.icons.fontawesomeicons.solid.Hospital
 import dao.HospitalDAO
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import modelos.Hospital
-import vistas.util.Colores
+import vistas.colores.hospitalGradient
 import vistas.componentes.InfoItem
 import vistas.componentes.RotatingCard
 
@@ -28,15 +31,14 @@ fun HospitalListContent() {
     var hospitales by remember { mutableStateOf(listOf<Hospital>()) }
     var isLoading by remember { mutableStateOf(true) }
 
-    val coroutineScope = rememberCoroutineScope()
 
     // Simular carga de doctores
     LaunchedEffect(key1 = true) {
-        coroutineScope.launch {
-            delay(1000) // Simular delay de 1 segundo
-            hospitales = HospitalDAO.getAllHospitals()
-            isLoading = false
-        }
+
+
+        hospitales = HospitalDAO.getAllHospitals()
+        isLoading = false
+
     }
 
 
@@ -68,29 +70,38 @@ fun HospitalListContent() {
             ) {
                 items(hospitales) { hospital ->
                     RotatingCard(
-                        frontGradient = Colores.hospitalGradient,
+                        frontGradient = hospitalGradient,
                         labelText = "Hospital",
                         avatar = painterResource("Hospital Sign.png"),
                         titleText = hospital.nombre,
-                        subtitleText = hospital.codigo,
+                        subtitleText = "",
                         infoItems = listOf(
-//                            InfoItem(Icons.Rounded.Badge, "Número de Historia", hospital.),
-//                            InfoItem(Icons.Rounded.Phone, "Teléfono", "555-5678"),
-//                            InfoItem(Icons.Rounded.CalendarToday, "Fecha de Nacimiento", "01/01/1990"),
-//                            InfoItem(Icons.Rounded.Email, "Correo Electrónico", "paciente@example.com")
+                            InfoItem(
+                                FontAwesomeIcons.Solid.Hospital,
+                                "Departamentos",
+                                hospital.cantidadDepartamentos.toString()
+                            ),
+                            InfoItem(Icons.Default.People, "Unidades", hospital.cantidadUnidades.toString()),
+                            InfoItem(Icons.Default.MedicalServices, "Médicos", hospital.cantidadMedicos.toString()),
+                            InfoItem(Icons.Rounded.Sick, "Pacientes", hospital.cantidadPacientes.toString())
                         )
-                    )
+                    ){
+                        GlassmorphismDialogManager.showDialog(
+                            listOf(
+                                DialogButton(
+                                    "Aceptar",
+                                    "✅"
+                                ) { println("Aceptar clicked"); GlassmorphismDialogManager.hideDialog() },
+                                DialogButton(
+                                    "Cancelar",
+                                    "❌"
+                                ) { println("Cancelar clicked"); GlassmorphismDialogManager.hideDialog() },
+                                DialogButton("Más información", "ℹ️") { println("Más información clicked") }
+                            )
+                        )
+                    }
                 }
             }
         }
-    }
-}
-
-fun generateDummyHospital(): List<Hospital> {
-    return List(20) { index ->
-        Hospital(
-            nombre = "Dr. Nombre ${index + 1}",
-            codigo = "9606960"
-        )
     }
 }

@@ -1,4 +1,5 @@
 package vistas.login
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -7,8 +8,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -18,60 +17,38 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import auth.Auth
-import global.Global
-import kotlinx.coroutines.delay
+import io.ktor.utils.io.*
 import kotlinx.coroutines.launch
-import vistas.DashboardApp
-import vistas.componentes.ShowToast
 import vistas.componentes.ToastHost
 import vistas.componentes.ToastManager
 import vistas.componentes.ToastType
 
+
 @Composable
-fun LoginScreen() {
+fun RegisterScreen() {
     var username by remember { mutableStateOf(TextFieldValue("")) }
     var password by remember { mutableStateOf(TextFieldValue("")) }
     var isLoading by remember { mutableStateOf(false) }
-    var showDashboardApp by remember { mutableStateOf(false) }
     var isButtonLoading by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-    var role by remember { mutableStateOf("") }
-    var hospital by remember { mutableStateOf("") }
     var errorAuthToast by remember { mutableStateOf(false) }
 
 
 
 
-    if (role != "") {
-        when(role){
-            "medico" -> {
-                Global.selectedHospital = hospital
-                DashboardApp()
-            }
-            "admin_hospital" -> {
-                Global.selectedHospital = hospital
-                DashboardApp()
-            }
-            "admin_general" -> {
-                DefaultPreview()
-            }
-            else-> DefaultPreview()
 
-        }
-
-    } else {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize().background(Color(0xFF121212))) {
             // Fondo con imagen oscurecida
-            Image(
-                painter = painterResource("fondo-login.png"), // Asegúrate de tener esta imagen en tus recursos
-                contentDescription = "Background",
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
+//            Image(
+//                painter = painterResource("fondo-login.png"), // Asegúrate de tener esta imagen en tus recursos
+//                contentDescription = "Background",
+//                modifier = Modifier.fillMaxSize(),
+//                contentScale = ContentScale.Crop
+//            )
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.6f))
+                    .background(Color(0xFF121212))
             )
 
             // Contenido del login
@@ -95,7 +72,7 @@ fun LoginScreen() {
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Iniciar sesión",
+                            text = "Crear cuenta ( médico )",
                             color = Color.White,
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
@@ -143,29 +120,18 @@ fun LoginScreen() {
                             onClick = {
                                 scope.launch {
                                     isButtonLoading = true
-                                    val session = Auth.login(username.text, password.text)
-                                    if (session != null) {
-                                        role = session.user?.role.toString()
-                                        hospital = session.user?.userMetadata!!["hospital_id"].toString()
-                                        isButtonLoading = false
-                                        // Autenticación exitosa
-                                        isLoading = true
-                                        showDashboardApp = true
-                                    }else {
-                                        ToastManager.showToast("Usted no tiene permiso para esta acción", ToastType.ERROR)
-                                        isButtonLoading = false
-                                        // Implement your error toast here
+                                    try {
+                                      var userInfo = Auth.crear_usuario(username.text,password.text)
+                                        if (userInfo != null) {
+                                            Auth.cambiar_rol(userInfo.id,"medico")
+                                        }
+                                        ToastManager.showToast("Cuenta creada",ToastType.SUCCESS)
+                                    }
+                                    catch(e: Exception) {
+                                        ToastManager.showToast(e.message.toString(), ToastType.ERROR)
                                     }
 
-
-
-
-
-
-
-
-
-
+                                    isButtonLoading = false
 
                                 }
                             },
@@ -185,7 +151,7 @@ fun LoginScreen() {
                                 )
                             } else {
                                 Text(
-                                    text = "Iniciar sesión",
+                                    text = "Crear",
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -207,4 +173,4 @@ fun LoginScreen() {
             ToastHost()
         }
     }
-}
+

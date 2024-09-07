@@ -72,6 +72,4 @@ fun CreateFormScreen() {
 }
 
 
-fun main() = singleWindowApplication {
-    CreateFormScreen()
-}
+

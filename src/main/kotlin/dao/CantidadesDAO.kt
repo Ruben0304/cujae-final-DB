@@ -5,7 +5,7 @@ import io.github.jan.supabase.postgrest.rpc
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import repository.Supabase
+import supabase.Supabase
 
 object CantidadesDAO {
     @Serializable

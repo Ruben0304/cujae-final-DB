@@ -28,6 +28,7 @@ data class PatientTable(
 
 @Serializable
 data class Registro(
+    val registro_id : Int,
     val numero_historia_clinica: String,
     val nombre: String,
     val apellidos: String,

@@ -4,7 +4,7 @@ import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.gotrue.providers.builtin.Email
 import io.github.jan.supabase.gotrue.user.UserInfo
 import io.github.jan.supabase.gotrue.user.UserSession
-import repository.Supabase
+import supabase.Supabase
 
 
 import kotlinx.coroutines.Dispatchers
@@ -37,7 +37,7 @@ object Auth {
 
     suspend fun logout() = withContext(Dispatchers.IO) { supabaseClient.auth.signOut() }
 
-    suspend fun crear_usuario(username: String, passwordP: String): UserInfo? = withContext(Dispatchers.IO) {
+    suspend fun crear_usuario(username: String, passwordP: String): UserInfo?  {
 
         try {
             val userWithEmail = supabaseClient.auth.admin.createUserWithEmail {
@@ -46,10 +46,10 @@ object Auth {
                 autoConfirm = true
             }
             println("Usuario creado: $userWithEmail")
-            userWithEmail
+           return userWithEmail
         } catch (e: Exception) {
             println("Error al crear el usuario: ${e.message}")
-            null
+           return null
         }
 
     }
