@@ -40,6 +40,7 @@ dependencies {
     implementation("io.github.jan-tennert.supabase:apollo-graphql:2.6.0")
     implementation("org.jetbrains.androidx.navigation:navigation-compose:2.7.0-alpha07")
     implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
+    implementation("com.itextpdf:itext7-core:7.2.5")
 
 
 
