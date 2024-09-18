@@ -40,26 +40,7 @@ dependencies {
     implementation("org.jetbrains.androidx.navigation:navigation-compose:2.7.0-alpha07")
     // https://mvnrepository.com/artifact/br.com.devsrsouza.compose.icons/font-awesome
     implementation("br.com.devsrsouza.compose.icons:font-awesome:1.1.0")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    implementation("com.itextpdf:itext7-core:7.2.3")
 
 }
 

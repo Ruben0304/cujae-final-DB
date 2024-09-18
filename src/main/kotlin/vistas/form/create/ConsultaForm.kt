@@ -11,7 +11,6 @@ import auth.Auth
 import dao.ConsultaDAO
 import dao.PatientDAO
 import kotlinx.coroutines.launch
-import kotlinx.datetime.LocalDate
 import modelos.ConsultaRequest
 import modelos.PatientRequest
 import vistas.componentes.SubmitButton
@@ -19,11 +18,14 @@ import vistas.nav.NavManager
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateConsultaForm() {
-    var fechaHora by remember { mutableStateOf(LocalDateTime.now()) }
+    var fecha by remember { mutableStateOf(LocalDateTime.now().toLocalDate()) } // Solo la fecha
+    var hora by remember { mutableStateOf(LocalDateTime.now().toLocalTime()) } // Solo la hora
+    var fechaHora by remember { mutableStateOf("") } // String con fecha y hora formateadas
     var pacienteCI by remember { mutableStateOf("") }
     var nombre by remember { mutableStateOf("") }
     var apellido by remember { mutableStateOf("") }
@@ -34,21 +36,20 @@ fun CreateConsultaForm() {
     var isLoading by remember { mutableStateOf(false) }
     var showAdditionalFields by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) } // Añadido para el TimePicker
 
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = fechaHora.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        initialSelectedDateMillis = Instant.now().toEpochMilli()
     )
 
     val coroutineScope = rememberCoroutineScope()
-
     val customBlue = Color(0xFF4285F4)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-
-
         LazyColumn(modifier = Modifier.height(300.dp)) {
             item {
                 OutlinedTextField(
@@ -144,16 +145,25 @@ fun CreateConsultaForm() {
                     Text("Seleccionar fecha", color = Color.White)
                 }
 
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    onClick = { showTimePicker = true }, // Botón para seleccionar hora
+                    modifier = Modifier.fillMaxWidth(.4f),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+                ) {
+                    Text("Seleccionar hora", color = Color.White)
+                }
+
                 Spacer(modifier = Modifier.height(100.dp))
-
-
             }
         }
+
         SubmitButton {
             coroutineScope.launch {
                 var paciente = true
                 if (showAdditionalFields) {
-                    val fechaNacimiento = LocalDate(
+                    val fechaNacimiento = kotlinx.datetime.LocalDate(
                         anioNacimiento.toInt(),
                         mesNacimiento.toInt(),
                         diaNacimiento.toInt()
@@ -167,28 +177,48 @@ fun CreateConsultaForm() {
                     )
                     paciente = PatientDAO.insert(patient) != null
                 }
-                if (paciente && Auth.idMedico != null) {
+
+
+                // Combinar la fecha y la hora seleccionadas para obtener un `LocalDateTime`
+                val fechaCompleta = LocalDateTime.of(fecha, hora)
+
+// Sumar 1 día a la fecha completa
+                val fechaCompletaMasUnDia = fechaCompleta.plusDays(1)
+
+// Formatear la fecha completa en el formato deseado
+                val fechaHoraFormateada =
+                    fechaCompletaMasUnDia.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+
+                try {
                     ConsultaDAO.crearConsultaConRegistro(
                         ConsultaRequest(
-                            medicoCodigo = Auth.idMedico!!,
-                            fechaHora = fechaHora,
-                            pacienteCI = pacienteCI
+                            codigo = Auth.idMedico!!,          // Usar el código del médico
+                            timestamp = fechaHoraFormateada,   // Fecha y hora formateadas
+                            registro = pacienteCI              // Carnet del paciente
                         )
                     )
-                    NavManager.refresh()
+                    println("Debe estar empingao")
+                    NavManager.refresh() // Actualizar la interfaz o navegación
+                } catch (e: Exception) {
+                    e.printStackTrace()
                 }
+                // Llamar al DAO con la fecha y hora formateadas
+
+
             }
         }
     }
+
     if (showDatePicker) {
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
                 TextButton(onClick = {
                     datePickerState.selectedDateMillis?.let {
-                        fechaHora = Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDateTime()
+                        fecha = Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate()
                     }
                     showDatePicker = false
+                    showTimePicker = true // Mostrar TimePicker después de seleccionar la fecha
                 }) {
                     Text("OK")
                 }
@@ -197,25 +227,60 @@ fun CreateConsultaForm() {
                 TextButton(onClick = { showDatePicker = false }) {
                     Text("Cancelar")
                 }
-            },
-            colors = DatePickerDefaults.colors(
-                containerColor = MaterialTheme.colorScheme.surface,
-                titleContentColor = customBlue,
-                headlineContentColor = customBlue,
-                weekdayContentColor = customBlue,
-                subheadContentColor = customBlue,
-                yearContentColor = customBlue,
-                currentYearContentColor = customBlue,
-                selectedYearContainerColor = customBlue,
-                selectedYearContentColor = Color.White,
-                dayContentColor = customBlue,
-                selectedDayContainerColor = customBlue,
-                selectedDayContentColor = Color.White,
-                todayContentColor = customBlue,
-                todayDateBorderColor = customBlue
-            )
+            }
         ) {
             DatePicker(state = datePickerState)
         }
     }
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let {
+                        fecha = Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate()
+                    }
+                    showDatePicker = false
+                    showTimePicker = true // Mostrar TimePicker después de seleccionar la fecha
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancelar")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    if (showTimePicker) {
+        val timePickerState = remember { TimePickerState(initialHour = hora.hour, initialMinute = hora.minute, true) }
+
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    // Obtener la hora y los minutos seleccionados
+                    hora = LocalDateTime.of(fecha, hora).toLocalTime().withHour(timePickerState.hour)
+                        .withMinute(timePickerState.minute)
+                    showTimePicker = false
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) {
+                    Text("Cancelar")
+                }
+            },
+            text = {
+                TimePicker(state = timePickerState)
+            }
+        )
+    }
+
 }

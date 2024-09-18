@@ -7,9 +7,7 @@ import io.github.jan.supabase.postgrest.rpc
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import modelos.Doctor
-import modelos.Hospital
-import modelos.HospitalNombres
+import modelos.*
 import supabase.Supabase
 import vistas.componentes.ToastManager
 import vistas.componentes.ToastType
@@ -77,5 +75,14 @@ object HospitalDAO {
         }
 
 
+    }
+
+    suspend fun resumenProceso(codigo: String) = withContext(Dispatchers.IO) {
+        try {
+            Supabase.coneccion.postgrest.rpc("resumen_proceso_hospital", HResumenProcesoParam(codigo)).decodeSingle<HResumenProcesoHospitalResult>()
+        } catch (e: Exception){
+            println(e.message)
+            null
+        }
     }
 }

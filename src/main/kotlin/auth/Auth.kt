@@ -5,12 +5,15 @@ import io.github.jan.supabase.gotrue.providers.builtin.Email
 import io.github.jan.supabase.gotrue.user.UserInfo
 import io.github.jan.supabase.gotrue.user.UserSession
 import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.query.Columns
+import io.github.jan.supabase.realtime.Column
 import supabase.Supabase
 
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.put
+import modelos.DoctorId
 import modelos.UserMetadata
 import supabase.Hospital
 
@@ -46,6 +49,9 @@ object Auth {
                     hospital = userData.hospital_id.toString()
                     nombre = userData.nombre
                     apellidos = userData.apellidos
+                    if (rol == "medico")
+                        idMedico = obtenerIdMedico(userData.user_id)?.medico_id
+                    println(idMedico)
                 }
                 session
             } else {
@@ -135,6 +141,21 @@ object Auth {
             Supabase.coneccion.from("usuarios_metadata").insert(metadata)
         } catch (e: Exception) {
             println("Error: ${e.message}")
+        }
+
+    }
+
+    private suspend fun obtenerIdMedico(id: String) = withContext(Dispatchers.IO) {
+        try {
+
+            Supabase.coneccion.from("usuario_medico").select() {
+                filter {
+                    eq("user_id", id)
+                }
+            }.decodeSingle<DoctorId>()
+        } catch (e: Exception) {
+            println("Error: ${e.message}")
+            null
         }
 
     }

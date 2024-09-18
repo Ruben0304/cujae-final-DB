@@ -184,7 +184,9 @@ object ConsultaDAO {
 
     suspend fun crearConsultaConRegistro(consulta: ConsultaRequest) {
         try {
+            println(consulta)
             Supabase.coneccion.postgrest.rpc("crear_consulta_con_registro", consulta)
+            println(consulta)
         }catch (e: Exception){
             println(e.message)
         }

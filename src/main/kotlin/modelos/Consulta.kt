@@ -27,17 +27,24 @@ data class RegistroC(
     val paciente: PacienteC
 )
 
-
+@Serializable
 data class ConsultaRequest(
     @SerialName("p_medico_codigo")
-    val medicoCodigo: String,
-
+    val codigo: String,
     @SerialName("p_fecha_hora")
-    val fechaHora: java.time.LocalDateTime,
-
+    val timestamp: String,
     @SerialName("p_paciente_ci")
-    val pacienteCI: String
-)
+    val registro: String
+) {
+    // Método auxiliar para formatear la fecha actual
+    companion object {
+        fun crearConTimestampActual(codigo: String, registro: String): ConsultaRequest {
+            val formato = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+            val timestampActual = java.time.LocalDateTime.now().format(formato)
+            return ConsultaRequest(codigo, timestampActual, registro)
+        }
+    }
+}
 
 @Serializable
 data class Consulta(

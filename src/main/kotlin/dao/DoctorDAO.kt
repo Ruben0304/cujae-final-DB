@@ -29,14 +29,14 @@ object DoctorDAO {
         ).decodeList<Doctor>()
     }
 
-    suspend fun listar_medicos_por_departamento(depaId: String, hospiId: String): List<Doctor> = withContext(Dispatchers.IO) {
+    suspend fun listar_medicos_por_departamento(depaId: String, hospiId: String)= withContext(Dispatchers.IO) {
         Supabase.coneccion.postgrest.rpc(
             "listar_medicos_por_departamento",
             MDRequest(depaId,hospiId)
         ).decodeList<Doctor>()
     }
 
-    suspend fun listar_medicos_por_unidad(unidadId: String,depaId: String, hospiId: String): List<Doctor> = withContext(Dispatchers.IO) {
+    suspend fun listar_medicos_por_unidad(unidadId: String,depaId: String, hospiId: String) = withContext(Dispatchers.IO) {
         Supabase.coneccion.postgrest.rpc(
             "listar_medicos_por_unidad",
             MURequest(unidadId,depaId,hospiId)

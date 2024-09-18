@@ -17,3 +17,6 @@ data class Doctor(
     @SerialName("anios_experiencia") val aniosExperiencia: Int,
     @SerialName("datos_contacto") val datosContacto: String
 )
+
+@Serializable
+data class DoctorId(val medico_id : String)

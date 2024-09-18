@@ -318,7 +318,7 @@ fun SwipeableConsultaRow(
                     }
             ) {
                 val icono = when (selectedEstado) {
-                    "no_atendido" -> "❌"
+                    "no atendido" -> "❌"
                     "pendiente" -> "🕗"
                     "fallecido" -> "💀"
                     else -> "✅"
