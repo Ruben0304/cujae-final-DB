@@ -34,7 +34,8 @@ fun MacOSTitleBar(windowState: WindowState) {
         modifier = Modifier
             .fillMaxWidth()
             .height(30.dp)
-            .background(Color(0xFF2D2D2D))
+//            .background(Color(0xFF2D2D2D))
+            .background(Color.Black)
             .pointerInput(Unit) {
                 detectDragGestures(
                     onDragStart = {

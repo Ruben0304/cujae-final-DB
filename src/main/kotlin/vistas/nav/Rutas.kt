@@ -11,6 +11,9 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import auth.Auth
+import dao.TurnoDAO
+import kotlinx.coroutines.launch
 import vistas.*
 import vistas.login.LoginScreen
 import vistas.login.RegisterScreen
@@ -35,15 +38,37 @@ fun EstablecerRutas(navController: NavHostController) {
         }
 
     ) {
-        composable("inicio") { DashboardContent() }
+        //Medico
+        composable("turnos_medico") { TurnoTable() }
+        composable("consulta_medico") { ConsultaTable() }
+
+
+
+        //Admins
+        composable("inicio") { if (Auth.rol == "medico") DashboardContentMedico() else DashboardContent()}
         composable("medicos") { DoctorListContent() }
         composable("hospitales") { HospitalListContent() }
         composable("buscar") { SearchScreen() }
-        composable("pacientesHospital") { PacientesHospital() }
+//        composable("pacientesHospital") { PacientesHospital() }
         composable("ia") { ConsultaIA() }
         composable("crear") { CreateFormScreen() }
         composable("register") { RegisterScreen() }
+        composable("admins") { AccountsTable() }
         composable("departamentos") { DepartamentoTable(navController) }
+        composable("unidadesH") { UnidadTable(
+            onNavigateToPacientes = { unidadCodigo, departamentoCodigo ->
+                navController.navigate("pacientes/$unidadCodigo/$departamentoCodigo")
+            },
+            onNavigateToTurnos = { unidadCodigo, departamentoCodigo ->
+                navController.navigate("turnos/$unidadCodigo/$departamentoCodigo")
+            },
+            onNavigateToMedicos = { departamentoCodigo,unidadCodigo ->
+                navController.navigate("medicos/$departamentoCodigo/$unidadCodigo")
+            },
+            onNavigateToInformes = { unidadCodigo,departamentoCodigo  ->
+                navController.navigate("informes/$unidadCodigo/$departamentoCodigo")
+            }
+        ) }
         composable(
             "unidades/{departamentoCodigo}",
             arguments = listOf(navArgument("departamentoCodigo") { type = NavType.StringType })
@@ -59,6 +84,9 @@ fun EstablecerRutas(navController: NavHostController) {
                 },
                 onNavigateToMedicos = { departamentoCodigo,unidadCodigo ->
                     navController.navigate("medicos/$departamentoCodigo/$unidadCodigo")
+                } ,
+                        onNavigateToInformes = { unidadCodigo,departamentoCodigo ->
+                    navController.navigate("informes/$unidadCodigo/$departamentoCodigo")
                 }
             )
         }
@@ -102,29 +130,52 @@ fun EstablecerRutas(navController: NavHostController) {
             TurnoTable(
                 unidad = unidadCodigo.orEmpty(),
                 departamento = departamentoCodigo.orEmpty(),
-                onNavigateToConsultas = { unidad, departamento, turnoNumero ->
-                    navController.navigate("consultas/$unidad/$departamento/$turnoNumero")
-                }
             )
         }
         composable(
-            "consultas/{unidadCodigo}/{departamentoCodigo}/{turnoNumero}",
+            "consultas/{unidadCodigo}/{departamentoCodigo}/{turnoNumero}/{medico}",
             arguments = listOf(
                 navArgument("unidadCodigo") { type = NavType.StringType },
                 navArgument("departamentoCodigo") { type = NavType.StringType },
-                navArgument("turnoNumero") { type = NavType.IntType }
+                navArgument("turnoNumero") { type = NavType.IntType },
+                navArgument("medico") { type = NavType.StringType }
             )
         ) { backStackEntry ->
             val unidadCodigo = backStackEntry.arguments?.getString("unidadCodigo")
             val departamentoCodigo = backStackEntry.arguments?.getString("departamentoCodigo")
             val turnoNumero = backStackEntry.arguments?.getInt("turnoNumero")
+            val medico = backStackEntry.arguments?.getString("medico")
             ConsultaTable(
                 unidad = unidadCodigo.orEmpty(),
                 departamento = departamentoCodigo.orEmpty(),
-                numeroTurno = turnoNumero ?: 0
+                numeroTurno = turnoNumero ?: 0,
+                medico = medico.orEmpty()
             )
         }
-        composable("login") { LoginScreen() }
+
+        composable(
+            "informes/{unidadCodigo}/{departamentoCodigo}",
+            arguments = listOf(
+                navArgument("unidadCodigo") { type = NavType.StringType },
+                navArgument("departamentoCodigo") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val unidadCodigo = backStackEntry.arguments?.getString("unidadCodigo")
+            val departamentoCodigo = backStackEntry.arguments?.getString("departamentoCodigo")
+            InformesTable(
+                unidad = unidadCodigo.orEmpty(),
+                departamento = departamentoCodigo.orEmpty()
+            )
+        }
+
+
+
+
+
+
+
+
+//        composable("login") { LoginScreen() }
         // Agrega más composables aquí según sea necesario
     }
 

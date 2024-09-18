@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Regular
+import vistas.colores.primaryColor
 
 
 @Composable
@@ -78,7 +79,7 @@ fun AnimatedFAB(
 
             FloatingActionButton(
                 onClick = { onExpandedChange(!expanded)},
-                containerColor = Color(16, 78, 146),
+                containerColor = primaryColor,
                 modifier = Modifier.rotate(rotationAngle)
             ) {
                 Icon(

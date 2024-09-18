@@ -34,54 +34,154 @@ import vistas.DoctorListContent
 import vistas.login.LoginScreen
 
 
+import androidx.compose.foundation.layout.*
+
+import androidx.compose.material.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.draw.clip
+
+import androidx.compose.ui.draw.shadow
+
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Window
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.*
+
+import androidx.compose.material.icons.filled.*
+import androidx.compose.runtime.*
+
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+
+import androidx.compose.ui.unit.dp
+import auth.Auth
+import kotlinx.coroutines.launch
+import vistas.colores.*
+
+
+val menuItemTextSize = 14.sp
+val subMenuItemTextSize = 12.sp
+val logoTextSize = 20.sp
+
 
 @Composable
-fun SideBar(navController: NavHostController) {
+fun SideBar(navController: NavHostController, onLogout: () -> Unit) {
     var expandedMenu by remember { mutableStateOf("") }
 
-    Column(
+    Surface(
+        elevation = 6.dp,
+        shape = RoundedCornerShape(16.dp),
         modifier = Modifier
-            .width(200.dp)
+            .padding(start = 16.dp, top = 16.dp, bottom = 16.dp)
+            .width(220.dp)
             .fillMaxHeight()
-            .background(Color(0xFF1E1E1E))
-            .padding(vertical = 8.dp)
+            .background(Color.Transparent)
     ) {
-        SideBarLogo()
-        Divider(color = Color(0xFF3E3E3E), thickness = 1.dp, modifier = Modifier.padding(bottom = 20.dp))
+        Surface(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+//                    Brush.linearGradient(
+//                        colors = listOf(
+//                            Color(0x3c24272c),
+//                            Color(0x74475d8d)
+//                        )),
+                    color = Color.White,
+                    shape = RoundedCornerShape(16.dp),
+                ),
 
-        SideBarMenuItem("Inicio", Icons.Default.Home, navController) { navController.navigate("inicio") }
+            color = Color.Transparent
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(vertical = 16.dp, horizontal = 12.dp)
+            ) {
+                SideBarLogo()
+                Divider(color = Color(0xFF3E3E3E), thickness = 1.dp, modifier = Modifier.padding(vertical = 16.dp))
 
-        SideBarMenuGroup("Gestión", Icons.Default.Business, expandedMenu) { expandedMenu = if (expandedMenu == "Gestión") "" else "Gestión" }
-        if (expandedMenu == "Gestión") {
-            SideBarSubMenuItem("Hospitales", navController) { navController.navigate("hospitales") }
-            SideBarSubMenuItem("Departamentos", navController) { navController.navigate("departamentos") }
-//            SideBarSubMenuItem("Unidades", navController) { navController.navigate("unidades") }
+                SideBarMenuItem("Inicio", Icons.Default.Home, navController) { navController.navigate("inicio") }
+
+                when(Auth.rol){
+                    "admin_general","admin_hospital","service_role" -> {
+                        SideBarMenuGroup("Gestión", Icons.Default.Business, expandedMenu) {
+                            expandedMenu = if (expandedMenu == "Gestión") "" else "Gestión"
+                        }
+                        if (expandedMenu == "Gestión") {
+
+                                SideBarSubMenuItem("Hospitales", navController) { navController.navigate("hospitales") }
+                                SideBarSubMenuItem("Departamentos", navController) { navController.navigate("departamentos") }
+                                SideBarSubMenuItem("Unidades", navController) { navController.navigate("unidadesH") }
+                        }
+
+                        SideBarMenuGroup("Personal", Icons.Default.People, expandedMenu) {
+                            expandedMenu = if (expandedMenu == "Personal") "" else "Personal"
+                        }
+                        if (expandedMenu == "Personal") {
+                            SideBarSubMenuItem("Médicos", navController) { navController.navigate("medicos") }
+                            SideBarSubMenuItem("Pacientes", navController) { navController.navigate("pacientesHospital") }
+                        }
+
+                        SideBarMenuItemWithBubble(
+                            "Consulta verbal",
+                            Icons.Default.AutoAwesome,
+                            navController
+                        ) { navController.navigate("ia") }
+
+
+                            SideBarMenuItem(
+                                "Cuentas",
+                                Icons.Default.ManageAccounts,
+                                navController
+                            ) { navController.navigate("admins") }
+
+                        Spacer(modifier = Modifier.weight(1f))
+
+                        SideBarMenuItem(
+                            "Crear cuenta",
+                            Icons.Default.AccountCircle,
+                            navController
+                        ) { navController.navigate("register") }
+                        SideBarMenuItem(
+                            "Cerrar Sesión",
+                            Icons.AutoMirrored.Filled.Logout,
+                            navController
+                        ) { onLogout() }
+                    }
+
+
+
+
+                    //medico
+
+                    "medico" -> {
+                        SideBarMenuItem("Turnos", Icons.Filled.CalendarToday, navController) { navController.navigate("turnos_medico") }
+                        SideBarMenuItem("Consultas", Icons.Filled.MedicalServices, navController) { navController.navigate("consulta_medico") }
+                        Spacer(modifier = Modifier.weight(1f))
+                        SideBarMenuItem(
+                            "Cerrar Sesión",
+                            Icons.AutoMirrored.Filled.Logout,
+                            navController
+                        ) { onLogout() }
+                    }
+
+
+
+
+
+
+                }
+
+
+
+
+
+
+
+            }
         }
-
-        SideBarMenuGroup("Personal", Icons.Default.People, expandedMenu) { expandedMenu = if (expandedMenu == "Personal") "" else "Personal" }
-        if (expandedMenu == "Personal") {
-            SideBarSubMenuItem("Médicos", navController) { navController.navigate("medicos") }
-            SideBarSubMenuItem("Pacientes", navController) { navController.navigate("pacientesHospital") }
-        }
-
-        // Nuevo elemento con burbuja de "IA"
-
-
-
-//        SideBarMenuItem("Consultas", Icons.Default.EventNote, navController) { navController.navigate("consultas") }
-//        SideBarMenuItem("Turnos", Icons.Default.Schedule, navController) { navController.navigate("turnos") }
-
-//        SideBarMenuGroup("Informes", Icons.Default.Assessment, expandedMenu) { expandedMenu = if (expandedMenu == "Informes") "" else "Informes" }
-//        if (expandedMenu == "Informes") {
-//            SideBarSubMenuItem("Resúmenes", navController) { navController.navigate("resumenes") }
-//            SideBarSubMenuItem("Listados", navController) { navController.navigate("listados") }
-//        }
-        SideBarMenuItemWithBubble("Consulta verbal", Icons.Default.AutoAwesome, navController) { navController.navigate("ia") }
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        SideBarMenuItem("Crear cuenta", Icons.Default.ManageAccounts, navController) { navController.navigate("register") }
-        SideBarMenuItem("Cerrar Sesión", Icons.AutoMirrored.Filled.Logout, navController) { navController.navigate("login") }
     }
 }
 
@@ -93,25 +193,18 @@ fun SideBarLogo() {
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .background(Color(16, 78, 146), shape = CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.LocalHospital,
-                contentDescription = "Logo",
-                tint = Color.White,
-                modifier = Modifier.size(24.dp)
-            )
-        }
+        Icon(
+            imageVector = Icons.Default.MedicalServices,
+            contentDescription = "Logo",
+            tint = primaryColor,
+            modifier = Modifier.size(32.dp)
+        )
         Spacer(Modifier.width(12.dp))
         Text(
-            "Hospital App",
-            color = Color.White,
+            "MediCare",
+            color = Color.Black,
             fontWeight = FontWeight.Bold,
-            fontSize = 18.sp
+            fontSize = logoTextSize
         )
     }
 }
@@ -122,8 +215,8 @@ fun SideBarMenuItem(text: String, icon: ImageVector, navController: NavHostContr
     var isHovered by remember { mutableStateOf(false) }
 
     val backgroundColor = when {
-        isSelected -> Color(16, 78, 146)
-        isHovered -> Color(0xFF2A2A2A)
+        isSelected -> selectedBackgroundColor
+        isHovered -> hoverColor
         else -> Color.Transparent
     }
 
@@ -131,18 +224,26 @@ fun SideBarMenuItem(text: String, icon: ImageVector, navController: NavHostContr
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 4.dp)
-            .background(backgroundColor, shape = RoundedCornerShape(8.dp))
-            .clickable { onClick() }
-            .hoverable(
-                interactionSource = remember { MutableInteractionSource() },
-                enabled = true
-            )
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .clip(RoundedCornerShape(8.dp))
+            .background(backgroundColor)
+            .clickable(onClick = onClick)
+            .hoverable(interactionSource = remember { MutableInteractionSource() })
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
-        Spacer(modifier = Modifier.width(12.dp))
-        Text(text, color = Color.White, fontSize = 14.sp)
+        Icon(
+            icon,
+            contentDescription = null,
+            tint = if (isSelected) selectedTextColor else textColor,
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(
+            text = text,
+            color = if (isSelected) selectedTextColor else textColor,
+            fontSize = menuItemTextSize,
+            fontWeight = if (isSelected) selectedItemFontWeight else menuItemFontWeight
+        )
     }
 }
 
@@ -151,29 +252,32 @@ fun SideBarMenuGroup(text: String, icon: ImageVector, expandedMenu: String, onTo
     val isExpanded = expandedMenu == text
     var isHovered by remember { mutableStateOf(false) }
 
-    val backgroundColor = if (isHovered) Color(0xFF2A2A2A) else Color.Transparent
+    val backgroundColor = if (isHovered) hoverColor else Color.Transparent
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 4.dp)
-            .background(backgroundColor, shape = RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(8.dp))
+            .background(backgroundColor)
             .clickable(onClick = onToggle)
-            .hoverable(
-                interactionSource = remember { MutableInteractionSource() },
-                enabled = true
-            )
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .hoverable(interactionSource = remember { MutableInteractionSource() })
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
-        Spacer(modifier = Modifier.width(12.dp))
-        Text(text, color = Color.White, fontSize = 14.sp)
+        Icon(icon, contentDescription = null, tint = textColor, modifier = Modifier.size(24.dp))
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(
+            text = text,
+            color = textColor,
+            fontSize = menuItemTextSize,
+            fontWeight = menuItemFontWeight
+        )
         Spacer(modifier = Modifier.weight(1f))
         Icon(
             imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
             contentDescription = if (isExpanded) "Collapse" else "Expand",
-            tint = Color.White,
+            tint = textColor,
             modifier = Modifier.size(20.dp)
         )
     }
@@ -185,31 +289,28 @@ fun SideBarSubMenuItem(text: String, navController: NavHostController, onClick: 
     var isHovered by remember { mutableStateOf(false) }
 
     val backgroundColor = when {
-        isSelected -> Color(16, 78, 146)
-        isHovered -> Color(0xFF2A2A2A)
+        isSelected -> selectedBackgroundColor
+        isHovered -> hoverColor
         else -> Color.Transparent
     }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 40.dp, end = 8.dp, top = 2.dp, bottom = 2.dp)
-            .background(backgroundColor, shape = RoundedCornerShape(8.dp))
-            .clickable { onClick() }
-            .hoverable(
-                interactionSource = remember { MutableInteractionSource() },
-                enabled = true
-            )
-            .padding(horizontal = 12.dp, vertical = 6.dp),
+            .padding(start = 56.dp, end = 8.dp, top = 2.dp, bottom = 2.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(backgroundColor)
+            .clickable(onClick = onClick)
+            .hoverable(interactionSource = remember { MutableInteractionSource() })
+            .padding(horizontal = 16.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier
-                .size(6.dp)
-                .background(Color.White, CircleShape)
+        Text(
+            text = text,
+            color = if (isSelected) selectedTextColor else textColor,
+            fontSize = subMenuItemTextSize,
+            fontWeight = if (isSelected) selectedItemFontWeight else subMenuItemFontWeight
         )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(text, color = Color.White, fontSize = 12.sp)
     }
 }
 
@@ -219,8 +320,8 @@ fun SideBarMenuItemWithBubble(text: String, icon: ImageVector, navController: Na
     var isHovered by remember { mutableStateOf(false) }
 
     val backgroundColor = when {
-        isSelected -> Color(16, 78, 146)
-        isHovered -> Color(0xFF2A2A2A)
+        isSelected -> selectedBackgroundColor
+        isHovered -> hoverColor
         else -> Color.Transparent
     }
 
@@ -228,33 +329,38 @@ fun SideBarMenuItemWithBubble(text: String, icon: ImageVector, navController: Na
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 4.dp)
-            .background(backgroundColor, shape = RoundedCornerShape(8.dp))
-            .clickable { onClick() }
-            .hoverable(
-                interactionSource = remember { MutableInteractionSource() },
-                enabled = true
-            )
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .clip(RoundedCornerShape(8.dp))
+            .background(backgroundColor)
+            .clickable(onClick = onClick)
+            .hoverable(interactionSource = remember { MutableInteractionSource() })
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
-        Spacer(modifier = Modifier.width(12.dp))
-        Text(text, color = Color.White, fontSize = 14.sp)
+        Icon(
+            icon,
+            contentDescription = null,
+            tint = if (isSelected) selectedTextColor else textColor,
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(
+            text = text,
+            color = if (isSelected) selectedTextColor else textColor,
+            fontSize = menuItemTextSize,
+            fontWeight = if (isSelected) selectedItemFontWeight else menuItemFontWeight
+        )
 
-        // Burbuja de "IA"
-        Box(
-            modifier = Modifier
-                .padding(start = 8.dp)
-                .size(24.dp)
-                .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(Color(0xFF64B5F6), Color(0xFF1E88E5))
-                    ),
-                    shape = CircleShape
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Text("IA", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-        }
+        Spacer(modifier = Modifier.weight(1f))
+//        Box(
+//            modifier = Modifier
+//                .size(24.dp)
+//                .background(
+//                    brush = Brush.linearGradient(colors = gradientColors),
+//                    shape = CircleShape
+//                ),
+//            contentAlignment = Alignment.Center
+//        ) {
+//            Text("IA", color = Color.White, fontSize = 6.sp, fontWeight = FontWeight.Bold)
+//        }
     }
 }

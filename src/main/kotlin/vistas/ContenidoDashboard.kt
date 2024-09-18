@@ -1,9 +1,10 @@
 package vistas
 
-import vistas.componentes.AnimatedProgressCard
-import vistas.componentes.StatCard
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -13,14 +14,27 @@ import androidx.compose.material.icons.outlined.LocalHospital
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import auth.Auth
 import dao.CantidadesDAO.obtenerConteoPacientesPorEstado
 import dao.DoctorDAO
 import dao.PatientDAO
 import global.Global
+import io.github.jan.supabase.gotrue.auth
 import kotlinx.coroutines.launch
-
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
+import supabase.Supabase
+import vistas.colores.SoftBlue
+import vistas.colores.SoftGreen
+import vistas.colores.SoftRed
+import vistas.colores.textColor
+import vistas.componentes.*
 
 
 @Composable
@@ -36,30 +50,36 @@ fun DashboardContent() {
     var cantidadUnidades by remember { mutableStateOf(0) }
     var isLoading by remember { mutableStateOf(true) }
 
-
-//    var selectedFilter by remember { mutableStateOf("Unidad") }
-//    val filterOptions = listOf("Unidad", "Departamento", "Hospital")
-//    var expanded by remember { mutableStateOf(false) }
-
-    // Simular carga de doctores
     LaunchedEffect(key1 = true) {
-        coroutineScope.launch {
-            if (Global.selectedHospital != null) {
-                val conteoPacientes = obtenerConteoPacientesPorEstado(Global.selectedHospital!!)
 
-                noAtendidos = conteoPacientes.no_atendidos
-                atendidos = conteoPacientes.atendidos
-                fallecidos = conteoPacientes.fallecidos
-                pendientes = conteoPacientes.pendientes
-                dadosDeAlta = conteoPacientes.dados_de_alta
+//Auth.logout()
+//        Auth.login("a@a.com", "a")
+
+
+//        Auth.logout()
+//        Auth.cambiar_rol("fc568479-5527-44e0-89ce-06e162575b68", "service_role")
+
+//        Auth.login("a@a.com", "a")
+//        Supabase.coneccion.auth.importAuthToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndnZmRtZ3Nic3FmbGNndGVjZ2x3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyNDk2NjU3NSwiZXhwIjoyMDQwNTQyNTc1fQ.44s9ndcvYmbaFE1iJWwvrFjdcK8Z0PjEihGVS-WP6Nk")
+
+        println(Auth.rol)
+        if (Auth.hospital != "") {
+            try {
+                val conteoPacientes = obtenerConteoPacientesPorEstado(Auth.hospital)
+                    noAtendidos = conteoPacientes.no_atendidos
+                    atendidos = conteoPacientes.atendidos
+                    fallecidos = conteoPacientes.fallecidos
+                    pendientes = conteoPacientes.pendientes
+                    dadosDeAlta = conteoPacientes.dados_de_alta
                 cantidadDepartamentos = conteoPacientes.cantidad_departamentos
                 cantidadUnidades = conteoPacientes.cantidad_unidades
-
+            } catch (e: Exception) {
+                ToastManager.showToast(e.message.toString(), ToastType.INFO)
             }
-            isLoading = false
-        }
-    }
 
+        }
+        isLoading = false
+    }
 
 
     Column(
@@ -68,74 +88,84 @@ fun DashboardContent() {
             .padding(16.dp)
             .background(Color.Transparent)
     ) {
+        // Agregar el componente de bienvenida en la parte superior
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Espacio vacío a la izquierda para mantener el avatar a la derecha
+            Spacer(modifier = Modifier.weight(1f))
+
+            // Componente de bienvenida
+            WelcomeAvatar()
+        }
         if (isLoading) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                androidx.compose.material3.CircularProgressIndicator(color = Color(16, 78, 146))
+                androidx.compose.material3.CircularProgressIndicator(color = Color.Blue)
             }
         } else {
-
-            // Filter Dropdown
+            // Agregar dropdown filtrador y estilo futurista
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(bottom = 16.dp)
             ) {
-//
+                // Componente de dropdown aquí
             }
 
             Row(
-                modifier = Modifier
-                    .padding(16.dp)
+                modifier = Modifier.padding(16.dp)
             ) {
-                StatCard("Unidades", cantidadUnidades.toString(), Icons.Outlined.CheckCircle, Color(0xFF42A5F5))
+                StatCard(
+                    "Unidades",
+                    cantidadUnidades.toString(),
+                    Icons.Outlined.CheckCircle,
+                    SoftBlue
+                )
                 Spacer(modifier = Modifier.width(16.dp))
-
-
                 StatCard(
                     "Departamentos",
                     cantidadDepartamentos.toString(),
                     Icons.Outlined.ErrorOutline,
-                    Color(0xFFF44336)
+                    SoftRed
                 )
-
                 Spacer(modifier = Modifier.width(16.dp))
                 StatCard(
                     "Pacientes no atendidos",
                     noAtendidos.toString(),
                     Icons.Outlined.LocalHospital,
-                    Color(0xFF4CAF50)
+                    SoftGreen
                 )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-
-            // Nuevos componentes
-
-            if (noAtendidos != 0)
+            // Nuevos componentes con estilo Glassmorphism
+            if (noAtendidos != 0) {
                 Row(
-                    modifier = Modifier
-                        .padding(16.dp)
+                    modifier = Modifier.padding(16.dp)
                 ) {
                     AnimatedProgressCard(
                         "Vivos restantes",
                         1f - fallecidos.toFloat() / (noAtendidos.toFloat() + atendidos.toFloat()),
-                        Color(0xff52ad6c)
+                        Color(88, 185, 106)
                     )
-//
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
                     AnimatedProgressCard(
                         "Muertos",
                         fallecidos.toFloat() / (noAtendidos.toFloat() + atendidos.toFloat()),
-                        Color(0xff73122c)
+                        Color(187, 59, 59)
                     )
                 }
-
+            }
         }
     }
-
 }
-
-
 

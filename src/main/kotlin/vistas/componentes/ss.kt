@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import vistas.colores.primaryColor
 
 @Composable
 @Preview
@@ -106,7 +107,7 @@ fun CustomDropdown(
     Box {
         Button(
             onClick = { expanded = true },
-            colors = ButtonDefaults.buttonColors(backgroundColor = Color(73,80,93, 0xed))
+            colors = ButtonDefaults.buttonColors(backgroundColor = primaryColor)
         ) {
             Text(selectedOption, color = Color.White)
         }

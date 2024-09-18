@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Hospital(
+    @SerialName("hospital_codigo") val codigo: String,
     @SerialName("hospital_nombre") val nombre: String,
     @SerialName("cantidad_departamentos") val cantidadDepartamentos: Int,
     @SerialName("cantidad_unidades") val cantidadUnidades: Int,
@@ -16,6 +17,5 @@ data class Hospital(
 data class HospitalNombres(
      val codigo: String,
      val nombre: String,
-
 )
 

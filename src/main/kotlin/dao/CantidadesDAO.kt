@@ -22,8 +22,8 @@ object CantidadesDAO {
     @Serializable
     data class CPEHRequest(val p_hospital_codigo: String)
 
-    suspend fun obtenerConteoPacientesPorEstado(hospitalCodigo: String): ConteoPacientesEstado = withContext(Dispatchers.IO) {
-        Supabase.coneccion.postgrest.rpc("conteo_pacientes_por_estado_hospital", CPEHRequest(hospitalCodigo))
+    suspend fun obtenerConteoPacientesPorEstado(hospitalCodigo: String): ConteoPacientesEstado  {
+      return  Supabase.coneccion.postgrest.rpc("conteo_pacientes_por_estado_hospital", CPEHRequest(hospitalCodigo))
             .decodeSingle<ConteoPacientesEstado>()
     }
 

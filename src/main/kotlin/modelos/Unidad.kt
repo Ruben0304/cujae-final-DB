@@ -7,8 +7,7 @@ import kotlinx.serialization.Serializable
 data class Unidad(
 
     val codigo: String,
-
+    @SerialName("departamento_codigo") val departamento: String,
     val nombre: String,
-
     val ubicacion: String
 )

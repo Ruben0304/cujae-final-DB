@@ -1,5 +1,7 @@
 package dao
 
+import dao.SearchDAO.Consulta
+
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.rpc
@@ -10,18 +12,50 @@ import modelos.Turno
 import supabase.Supabase
 
 object TurnoDAO {
-    suspend fun getTurnosUnidad(unidadCodigo: String, departamentoCodigo: String, hospital: String): List<Turno> =
-        withContext(Dispatchers.IO) {
-            Supabase.coneccion.from("turno")
-                .select { filter {
-                    and {
-                        eq("unidad_codigo", unidadCodigo)
-                        eq("departamento_codigo", departamentoCodigo)
-                        eq("hospital_codigo", hospital)
-                    }
 
-                } }
-                .decodeList<Turno>()
+
+    suspend fun getTurnosMedico() =
+        withContext(Dispatchers.IO) {
+            try {
+                Supabase.coneccion.postgrest.rpc("obtener_turnos_admin").decodeList<Turno>()
+            } catch (e: Exception) {
+                println(e.message)
+                emptyList()
+            }
+
+        }
+
+    suspend fun getTurnosUnidad(unidadCodigo: String, departamentoCodigo: String, hospital: String) =
+        withContext(Dispatchers.IO) {
+            try {
+                Supabase.coneccion.postgrest.rpc("obtener_listado_turnos", mapOf("p_unidad_codigo" to unidadCodigo,"p_departamento_codigo" to departamentoCodigo, "p_hospital_codigo" to hospital)).decodeList<Turno>()
+            } catch (e: Exception) {
+                println(e.message)
+                emptyList()
+            }
+
+        }
+
+
+
+    suspend fun eliminar(numeroTurno: Int,unidadCodigo: String, departamentoCodigo: String, hospital: String,medicoCodigo: String) =
+        withContext(Dispatchers.IO) {
+            try {
+                Supabase.coneccion.from("turno")
+                    .delete { filter {
+                        and {
+                            eq("numero_turno", numeroTurno)
+                            eq("hospital_codigo", hospital )
+                            eq("departamento_codigo", departamentoCodigo )
+                            eq("unidad_codigo", unidadCodigo )
+                            eq("medico_codigo", medicoCodigo )
+
+                        }
+                    } }
+            } catch (e: Exception) {
+                println(e.message)
+            }
+
         }
 
     @Serializable

@@ -79,7 +79,7 @@ fun StartLoading() {
                     }
                 }
             } else {
-                LoginScreen()
+//                LoginScreen()
             }
 
             // Show toast when there's no internet connection

@@ -1,4 +1,4 @@
-package vistas.form
+package vistas.form.create
 
 
 import androidx.compose.foundation.layout.Spacer
@@ -9,29 +9,46 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import dao.TurnoDAO
+import dao.PatientDAO
 import kotlinx.coroutines.launch
 import vistas.componentes.SubmitButton
+import vistas.componentes.TextAreaField
 import vistas.componentes.TextInputField
 import java.time.LocalDate
 
 @Composable
-fun CreateTurnoForm() {
-    var numeroTurno by remember { mutableStateOf("") }
+fun CreatePacienteForm() {
+    var numeroHistoriaClinica by remember { mutableStateOf("") }
+    var nombre by remember { mutableStateOf("") }
+    var apellidos by remember { mutableStateOf("") }
+    var fechaNacimiento by remember { mutableStateOf("") }
+    var direccion by remember { mutableStateOf("") }
     var unidadCodigo by remember { mutableStateOf("") }
     var departamentoCodigo by remember { mutableStateOf("") }
     var hospitalCodigo by remember { mutableStateOf("") }
-    var medicoCodigo by remember { mutableStateOf("") }
-    var fecha by remember { mutableStateOf("") }
-    var pacientesAtendidos by remember { mutableStateOf("") }
-    var pacientesAsignados by remember { mutableStateOf("") }
     val corrutineScope = rememberCoroutineScope()
 
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(16.dp)
     ) {
         item {
-            TextInputField(value = numeroTurno, onValueChange = { numeroTurno = it }, label = "Número de turno")
+            TextInputField(
+                value = numeroHistoriaClinica,
+                onValueChange = { numeroHistoriaClinica = it },
+                label = "Número de historia clínica"
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            TextInputField(value = nombre, onValueChange = { nombre = it }, label = "Nombre")
+            Spacer(modifier = Modifier.height(16.dp))
+            TextInputField(value = apellidos, onValueChange = { apellidos = it }, label = "Apellidos")
+            Spacer(modifier = Modifier.height(16.dp))
+            TextInputField(
+                value = fechaNacimiento,
+                onValueChange = { fechaNacimiento = it },
+                label = "Fecha de nacimiento"
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            TextAreaField(value = direccion, onValueChange = { direccion = it }, label = "Dirección")
             Spacer(modifier = Modifier.height(16.dp))
             TextInputField(value = unidadCodigo, onValueChange = { unidadCodigo = it }, label = "Código de unidad")
             Spacer(modifier = Modifier.height(16.dp))
@@ -46,35 +63,20 @@ fun CreateTurnoForm() {
                 onValueChange = { hospitalCodigo = it },
                 label = "Código de hospital"
             )
-            Spacer(modifier = Modifier.height(16.dp))
-            TextInputField(value = medicoCodigo, onValueChange = { medicoCodigo = it }, label = "Código de médico")
-            Spacer(modifier = Modifier.height(16.dp))
-            TextInputField(value = fecha, onValueChange = { fecha = it }, label = "Fecha")
-            Spacer(modifier = Modifier.height(16.dp))
-            TextInputField(
-                value = pacientesAtendidos,
-                onValueChange = { pacientesAtendidos = it },
-                label = "Pacientes atendidos"
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            TextInputField(
-                value = pacientesAsignados,
-                onValueChange = { pacientesAsignados = it },
-                label = "Pacientes asignados"
-            )
             Spacer(modifier = Modifier.height(24.dp))
             SubmitButton(
+
                 onClicked = {
                     corrutineScope.launch {
-                        TurnoDAO.crearTurno(
-                            numeroTurno.toInt(),
+                        PatientDAO.crearPaciente(
+                            numeroHistoriaClinica,
+                            nombre,
+                            apellidos,
+                            LocalDate.parse(fechaNacimiento).toString(),
+                            direccion,
                             unidadCodigo,
                             departamentoCodigo,
-                            hospitalCodigo,
-                            medicoCodigo,
-                            LocalDate.parse(fecha).toString(),
-                            pacientesAtendidos.toInt(),
-                            pacientesAsignados.toInt()
+                            hospitalCodigo
                         )
                     }
                 }

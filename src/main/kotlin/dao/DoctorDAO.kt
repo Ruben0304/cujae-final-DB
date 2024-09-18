@@ -1,5 +1,6 @@
 package dao
 
+import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.rpc
 import kotlinx.coroutines.Dispatchers
@@ -10,6 +11,7 @@ import supabase.Supabase
 
 
 object DoctorDAO {
+
 
     @Serializable
     data class MHRequest(val p_hospital_codigo: String)
@@ -41,6 +43,17 @@ object DoctorDAO {
         ).decodeList<Doctor>()
     }
 
+    suspend fun eliminarMedico(codigo: String) = withContext(Dispatchers.IO){
+        try {
+            Supabase.coneccion.postgrest.rpc("eliminar_medico",mapOf("p_codigo" to codigo))
+        }catch (e:Exception){
+            println(e.message)
+            e.printStackTrace()
+        }
+
+
+    }
+
     @Serializable
     data class CrearMedicoRequest(
         val p_codigo: String,
@@ -69,22 +82,27 @@ object DoctorDAO {
         departamentoCodigo: String,
         hospitalCodigo: String
     ) = withContext(Dispatchers.IO) {
-        Supabase.coneccion.postgrest.rpc(
-            "crear_medico",
-            CrearMedicoRequest(
-                p_codigo = codigo,
-                p_nombre = nombre,
-                p_apellidos = apellidos,
-                p_especialidad = especialidad,
-                p_numero_licencia = numeroLicencia,
-                p_telefono = telefono,
-                p_anios_experiencia = aniosExperiencia,
-                p_datos_contacto = datosContacto,
-                p_unidad_codigo = unidadCodigo,
-                p_departamento_codigo = departamentoCodigo,
-                p_hospital_codigo = hospitalCodigo
+        try{
+            Supabase.coneccion.postgrest.rpc(
+                "crear_medico",
+                CrearMedicoRequest(
+                    p_codigo = codigo,
+                    p_nombre = nombre,
+                    p_apellidos = apellidos,
+                    p_especialidad = especialidad,
+                    p_numero_licencia = numeroLicencia,
+                    p_telefono = telefono,
+                    p_anios_experiencia = aniosExperiencia,
+                    p_datos_contacto = datosContacto,
+                    p_unidad_codigo = unidadCodigo,
+                    p_departamento_codigo = departamentoCodigo,
+                    p_hospital_codigo = hospitalCodigo
+                )
             )
-        )
+        }catch (e:Exception){
+           e.printStackTrace()
+        }
+
     }
 
 

@@ -15,6 +15,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import vistas.colores.textColor
 
 @Composable
 fun SearchBar(
@@ -26,7 +27,7 @@ fun SearchBar(
     var query by remember { mutableStateOf(searchText) }
 
     val backgroundColor by animateColorAsState(
-        targetValue = if (isFocused) Color(0xFF2A2A2A) else Color(0xFF1E1E1E),
+        targetValue = if (isFocused) Color(0xffffffff) else Color(0xf4ffffff),
         animationSpec = tween(durationMillis = 500)
     )
 
@@ -37,7 +38,7 @@ fun SearchBar(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(20.dp))
             .background(backgroundColor)
             .onFocusChanged { focusState -> isFocused = focusState.isFocused },
         trailingIcon = {
@@ -50,18 +51,18 @@ fun SearchBar(
                 Icon(
                     imageVector = Icons.Default.Search,
                     contentDescription = "Buscar",
-                    tint = Color.White
+                    tint = textColor
                 )
             }
         },
         colors = TextFieldDefaults.colors(
-            focusedTextColor = Color.White,
-            unfocusedTextColor = Color.White,
+            focusedTextColor = textColor,
+            unfocusedTextColor = textColor,
             disabledTextColor = Color.Gray,
             focusedContainerColor = Color.Transparent,
             unfocusedContainerColor = Color.Transparent,
             disabledContainerColor = Color.Transparent,
-            cursorColor = Color.White,
+            cursorColor = textColor,
             errorCursorColor = Color.Red,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,

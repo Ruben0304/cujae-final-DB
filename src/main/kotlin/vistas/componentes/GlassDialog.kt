@@ -34,12 +34,6 @@ import kotlinx.coroutines.launch
 import vistas.componentes.MacOSTitleBar
 import kotlin.math.truncate
 
-//fun main() = application {
-//    Window(onCloseRequest = ::exitApplication, title = "Glassmorphism Dialog Demo") {
-//        GlassmorphismDialogDemo()
-//    }
-//}
-
 object GlassmorphismDialogManager {
     private val isDialogOpenState = mutableStateOf(false)
     private val dialogButtonsState = mutableStateOf<List<DialogButton>>(emptyList())
@@ -118,7 +112,6 @@ fun GlassmorphismDialog(
     Box(
         modifier = Modifier
             .fillMaxSize()
-//            .background(Color.Black.copy(alpha = 0.6f))
     ) {
         // Contenido del diálogo
         Box(
@@ -185,18 +178,11 @@ fun ElegantButton(
         modifier = Modifier
             .padding(8.dp)
             .scale(scale)
-//            .width(100.dp)
-//            .background(
-//                Brush.horizontalGradient(
-//                    colors = listOf(Color(0xFF2C2C2C), Color(0xFF1C1C1C))
-//                ),
-//                RoundedCornerShape(50)
-//            )
             .pointerMoveFilter(
                 onEnter = { isHovered = true; false },
                 onExit = { isHovered = false; false }
             ),
-//        RoundedCornerShape(50)
+
     ) {
         Text(
             "$emoji $text",

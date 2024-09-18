@@ -24,42 +24,47 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import auth.Auth
 import dao.DepartamentoDAO
 import dao.UnidadDAO
 import global.Global
 import kotlinx.coroutines.launch
 import modelos.Departamento
 import modelos.Unidad
-
+import vistas.colores.textColor
+import vistas.componentes.AceptCancelDialogManager
+import vistas.nav.NavManager
 
 
 @Composable
 fun UnidadTable(
-    departamentoCodigo: String,
-    onNavigateToPacientes: (String,String) -> Unit,
-    onNavigateToTurnos: (String,String) -> Unit,
-    onNavigateToMedicos: (String,String) -> Unit
+    departamentoCodigo: String = "",
+    onNavigateToPacientes: (String, String) -> Unit,
+    onNavigateToTurnos: (String, String) -> Unit,
+    onNavigateToMedicos: (String, String) -> Unit,
+    onNavigateToInformes: (String, String) -> Unit
 ) {
-    val surfaceColor = Color(0xFF2D2D2D)
-    val headerColor = Color(0xFF3700B3)
-    val textColor = Color.White
-    val dividerColor = Color(0xFF3D3D3D)
-    val linkColor = Color(0xFF64B5F6)
+    val surfaceColor = Color(0xffffffff)
+    val headerColor = Color(0xe4000000)
+    val dividerColor = Color(0xba949494)
+    val linkColor = Color(0xff5073ec)
     val editColor = Color(0xFF4CAF50)
     val deleteColor = Color(0xFFF44336)
 
     var unidades by remember { mutableStateOf(listOf<Unidad>()) }
     var isLoading by remember { mutableStateOf(true) }
 
-    val coroutineScope = rememberCoroutineScope()
+    val corrutineScope = rememberCoroutineScope()
+
 
     LaunchedEffect(key1 = true) {
-        coroutineScope.launch {
-            if (Global.selectedHospital != null)
-                unidades =
-                    UnidadDAO.obtenerUnidadesPorHospitalYDepartamento(Global.selectedHospital!!, departamentoCodigo)
-            isLoading = false
-        }
+        if (Auth.hospital != "")
+            unidades = if (departamentoCodigo == "")
+                UnidadDAO.obtenerUnidadesHospital(Auth.hospital)
+            else
+                UnidadDAO.obtenerUnidadesPorHospitalYDepartamento(Auth.hospital, departamentoCodigo)
+        isLoading = false
+
     }
 
     Column(
@@ -89,7 +94,7 @@ fun UnidadTable(
                             .background(headerColor)
                             .padding(vertical = 12.dp, horizontal = 16.dp)
                     ) {
-                        listOf("Cod", "Nombre", "Ubicación", "", "","").forEach { header ->
+                        listOf("Cod", "Nombre", "Ubicación", "", "", "", "").forEach { header ->
                             Box(
                                 modifier = Modifier.weight(1f),
                                 contentAlignment = Alignment.Center
@@ -97,7 +102,7 @@ fun UnidadTable(
                                 Text(
                                     text = header,
                                     fontWeight = FontWeight.Bold,
-                                    color = textColor,
+                                    color = Color.White,
                                 )
                             }
                         }
@@ -143,7 +148,25 @@ fun UnidadTable(
                                     Spacer(modifier = Modifier.width(12.dp)) // Increased spacing for better aesthetics
 
                                     IconButton(
-                                        onClick = { },
+                                        onClick = {
+
+
+                                            if (Auth.hospital != "")
+                                                AceptCancelDialogManager.showDialog(
+                                                    "Seguro que deseas eliminar unidad ?",
+                                                    {
+                                                        corrutineScope.launch {
+                                                            UnidadDAO.eliminar(
+                                                                unidad.codigo,
+                                                                unidad.departamento,
+                                                                Auth.hospital
+                                                            )
+                                                            NavManager.navController.navigate("unidades/${unidad.departamento}")
+                                                        }
+                                                    })
+
+
+                                        },
                                         modifier = Modifier
                                             .size(50.dp)
                                             .padding(8.dp)
@@ -198,7 +221,7 @@ fun UnidadTable(
                                             .padding(4.dp)
                                             .clip(RoundedCornerShape(8.dp)) // Add rounded corners to the clickable area
                                             .background(Color.Transparent)
-                                            .clickable { onNavigateToTurnos(unidad.codigo,departamentoCodigo)}
+                                            .clickable { onNavigateToTurnos(unidad.codigo, unidad.departamento) }
                                             .zIndex(3f), // Ensure this is above everything else
                                         contentAlignment = Alignment.Center
                                     ) {
@@ -214,11 +237,11 @@ fun UnidadTable(
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Text(
-                                            text = "Ver médicos",
+                                            text = "Médicos",
                                             color = linkColor,
                                             modifier = Modifier
                                                 .clickable {
-                                                  onNavigateToMedicos(departamentoCodigo,unidad.codigo)
+                                                    onNavigateToMedicos(unidad.departamento, unidad.codigo)
                                                 }
                                                 .padding(4.dp)
                                         )
@@ -229,7 +252,7 @@ fun UnidadTable(
                                             .padding(4.dp)
                                             .clip(RoundedCornerShape(8.dp))
                                             .background(Color.Transparent)
-                                            .clickable { onNavigateToPacientes(unidad.codigo,departamentoCodigo)}
+                                            .clickable { onNavigateToPacientes(unidad.codigo, unidad.departamento) }
                                             .zIndex(3f), // Ensure this is above everything else
                                         contentAlignment = Alignment.Center
                                     ) {
@@ -239,12 +262,29 @@ fun UnidadTable(
                                             modifier = Modifier.padding(4.dp)
                                         )
                                     }
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .padding(4.dp)
+                                            .clip(RoundedCornerShape(8.dp))
+
+                                            .background(Color.Transparent)
+                                            .clickable { onNavigateToInformes(unidad.codigo, unidad.departamento) }
+                                            .zIndex(3f), // Ensure this is above everything else
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = "Informes",
+                                            color = linkColor,
+                                            modifier = Modifier.padding(4.dp)
+                                        )
+                                    }
                                 }
                             }
 
-                            if (index < unidades.size - 1) {
-                                Divider(color = dividerColor, thickness = 1.dp)
-                            }
+//                            if (index < unidades.size - 1) {
+//                                Divider(color = dividerColor, thickness = 1.dp)
+//                            }
                         }
                     }
                 }

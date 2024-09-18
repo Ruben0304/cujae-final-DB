@@ -1,51 +1,74 @@
 package vistas
 
 import androidx.compose.animation.Animatable
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.EaseOutQuad
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import auth.Auth
 import dao.PatientDAO
 import dao.TurnoDAO
+import dao.UnidadDAO
 import global.Global
 import kotlinx.coroutines.launch
+import modelos.Departamento
 import modelos.Patient
 import modelos.Turno
+import vistas.colores.textColor
+import vistas.componentes.AceptCancelDialogManager
+import vistas.nav.NavManager
+import kotlin.math.roundToInt
 
 @Composable
-fun TurnoTable(unidad: String, departamento: String, onNavigateToConsultas: (String, String, Int) -> Unit) {
-    val surfaceColor = Color(0xFF2D2D2D)
-    val headerColor = Color(0xFF3700B3)
-    val textColor = Color.White
-    val dividerColor = Color(0xFF3D3D3D)
-    val linkColor = Color(0xFF64B5F6)
+fun TurnoTable(unidad: String? = null, departamento: String? = null) {
+    val surfaceColor = Color(0xffffffff)
+    val headerColor = Color(0xe4000000)
+    val dividerColor = Color(0xba949494)
+    val linkColor = Color(0xff5073ec)
     var turnos by remember { mutableStateOf(listOf<Turno>()) }
     var isLoading by remember { mutableStateOf(true) }
 
-    val coroutineScope = rememberCoroutineScope()
+    val corrutineScope = rememberCoroutineScope()
 
-    // Simular carga de doctores
     LaunchedEffect(key1 = true) {
-        coroutineScope.launch {
-            if (Global.selectedHospital != null)
-                turnos = TurnoDAO.getTurnosUnidad(unidad, departamento, Global.selectedHospital!!)
-            isLoading = false
+
+        try {
+            if (unidad != null && departamento != null)
+                turnos = TurnoDAO.getTurnosUnidad(unidad, departamento, Auth.hospital)
+            else
+                turnos = TurnoDAO.getTurnosMedico()
+        } catch (e: Exception) {
+            println(e.message)
         }
+
+        isLoading = false
     }
 
     Column(
@@ -58,111 +81,238 @@ fun TurnoTable(unidad: String, departamento: String, onNavigateToConsultas: (Str
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                androidx.compose.material3.CircularProgressIndicator(color = Color(16, 78, 146))
+                CircularProgressIndicator(color = Color(16, 78, 146))
             }
         } else {
-            Surface(
-                color = surfaceColor,
-                shape = RoundedCornerShape(8.dp),
-                elevation = 4.dp,
-                modifier = Modifier.fillMaxWidth()
+            AnimatedVisibility(
+                visible = !isLoading,
+                enter = fadeIn(animationSpec = tween(durationMillis = 100))
             ) {
-                Column {
-                    // Header
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(headerColor)
-                            .padding(vertical = 12.dp, horizontal = 16.dp)
-                    ) {
-                        listOf("Turno", "Doctor", "Total", "Atendidos", "Estado", "").forEach { header ->
-                            Text(
-                                text = header,
-                                fontWeight = FontWeight.Bold,
-                                color = textColor,
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                    }
-
-                    // Rows
-                    LazyColumn {
-                        itemsIndexed(turnos) { index, turno ->
-                            Column {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 12.dp, horizontal = 16.dp),
-                                    verticalAlignment = Alignment.CenterVertically
+                Surface(
+                    color = surfaceColor,
+                    shape = RoundedCornerShape(8.dp),
+                    elevation = 8.dp,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column {
+                        // Header
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(headerColor)
+                                .padding(vertical = 12.dp, horizontal = 16.dp)
+                        ) {
+                            listOf(
+                                "Turno",
+                                if (Auth.rol != "medico") "Doctor" else "",
+                                "Total",
+                                "Atendidos",
+                                "Estado",
+                                ""
+                            ).forEach { header ->
+                                Box(
+                                    modifier = Modifier.weight(1f),
+                                    contentAlignment = Alignment.Center
                                 ) {
-                                    Box(
-                                        modifier = Modifier.weight(1f),
-                                        contentAlignment = Alignment.Center
-                                    ) { Text(turno.numero.toString(), color = textColor) }
-                                    Box(
-                                        modifier = Modifier.weight(1f),
-                                        contentAlignment = Alignment.Center
-                                    ) { Text(turno.doctor, color = textColor) }
-                                    Box(
-                                        modifier = Modifier.weight(1f),
-                                        contentAlignment = Alignment.Center
-                                    ) { Text(turno.totalPacientes.toString(), color = textColor) }
-                                    Box(
-                                        modifier = Modifier.weight(1f),
-                                        contentAlignment = Alignment.Center
-                                    ) { Text(turno.pacientesAtendidos.toString(), color = textColor) }
-
-
-                                    Box(modifier = Modifier.weight(1f)) {
-                                        val animatedProgress =
-                                            remember { androidx.compose.animation.core.Animatable(0f) }
-                                        LaunchedEffect(turno) {
-                                            animatedProgress.animateTo(
-                                                targetValue = turno.pacientesAtendidos / turno.totalPacientes.toFloat(),
-                                                animationSpec = tween(1000, easing = FastOutSlowInEasing)
-                                            )
-                                        }
-
-                                        // Background progress bar
-                                        LinearProgressIndicator(
-                                            progress = 1f,
-                                            color = Color(0xFF424242),
-                                            modifier = Modifier
-                                                .height(6.dp)
-                                                .fillMaxWidth()
-                                        )
-                                        // Animated foreground progress bar
-                                        LinearProgressIndicator(
-                                            progress = animatedProgress.value,
-                                            color = if (turno.esExitoso()) Color(0xFF00C853) else Color(0xFFFF5252),
-                                            modifier = Modifier
-                                                .height(6.dp)
-                                                .fillMaxWidth()
-                                        )
-                                    }
-
-                                    // Ver link
-                                    Box(
-                                        modifier = Modifier.weight(1f),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(
-                                            text = "Ver",
-                                            color = linkColor,
-                                            modifier = Modifier
-                                                .clickable { onNavigateToConsultas(unidad, departamento, turno.numero) }
-                                                .padding(4.dp)
-                                        )
-                                    }
+                                    Text(
+                                        text = header,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White,
+                                    )
                                 }
-                                if (index < turnos.size - 1) {
-                                    Divider(color = dividerColor, thickness = 1.dp)
-                                }
+                            }
+                        }
+
+                        // Rows
+                        LazyColumn {
+                            itemsIndexed(turnos) { index, turno ->
+                                SwipeableTurnoRow(
+                                    turno = turno,
+                                    onEdit = { /* Implementar lógica de edición */ },
+                                    onDelete = {
+
+                                        if (Auth.hospital != "")
+                                            AceptCancelDialogManager.showDialog(
+                                                "Seguro que deseas eliminar unidad ?",
+                                                {
+                                                    corrutineScope.launch {
+                                                        if (unidad != null) {
+                                                            if (departamento != null) {
+                                                                TurnoDAO.eliminar(
+                                                                    turno.numeroTurno,
+                                                                    unidad,
+                                                                    departamento,
+                                                                    Auth.hospital,
+                                                                    turno.medicoCodigo
+                                                                )
+                                                            }
+                                                        }
+                                                        NavManager.navController.navigate("turnos/${unidad}/${departamento}")
+                                                    }
+                                                })
+
+
+                                    },
+                                    onViewConsultas = { NavManager.navController.navigate("consultas/${unidad}/${departamento}/${turno.numeroTurno}/${turno.medicoCodigo}") },
+                                    linkColor = linkColor,
+                                    index = index
+                                )
+//                                if (index < turnos.size - 1) {
+//                                    Divider(color = dividerColor, thickness = 1.dp)
+//                                }
                             }
                         }
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun SwipeableTurnoRow(
+    turno: Turno,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+    onViewConsultas: () -> Unit,
+    linkColor: Color,
+    index: Int
+) {
+    val coroutineScope = rememberCoroutineScope()
+    var offsetX by remember { mutableStateOf(0f) }
+    val animatedOffsetX by animateFloatAsState(targetValue = offsetX)
+    val animatedProgress = remember { androidx.compose.animation.core.Animatable(initialValue = 0f) }
+
+    LaunchedEffect(key1 = Unit) {
+        animatedProgress.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(
+                durationMillis = 250,
+                easing = EaseOutQuad,
+                delayMillis = index * 60
+            )
+        )
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .alpha(animatedProgress.value)
+            .offset(y = (20 * (1f - animatedProgress.value)).dp)
+    ) {
+        // Icons (Edit and Delete) - To the right, initially hidden
+        Row(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .alpha((-offsetX / 200f).coerceIn(0f, 1f))
+                .padding(end = 16.dp)
+        ) {
+            IconButton(
+                onClick = onEdit,
+                modifier = Modifier.size(50.dp)
+            ) {
+                Icon(
+                    Icons.Default.Edit,
+                    contentDescription = "Edit",
+                    tint = Color(43, 98, 218),
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            IconButton(
+                onClick = onDelete,
+                modifier = Modifier.size(50.dp)
+            ) {
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = "Delete",
+                    tint = Color(150, 42, 55),
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
+
+        // Row content
+        Row(
+            modifier = Modifier
+                .offset { IntOffset(animatedOffsetX.roundToInt(), 0) }
+                .fillMaxWidth()
+                .pointerInput(Unit) {
+                    detectHorizontalDragGestures(
+                        onDragEnd = {
+                            coroutineScope.launch {
+                                offsetX = if (offsetX < -100f) -200f else 0f
+                            }
+                        }
+                    ) { _, dragAmount ->
+                        coroutineScope.launch {
+                            offsetX = (offsetX + dragAmount).coerceIn(-200f, 0f)
+                        }
+                    }
+                }
+                .padding(vertical = 12.dp, horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = turno.numeroTurno.toString(),
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center
+            )
+            if(Auth.rol != "medico")
+            Text(
+                text =  "${turno.medicoNombre} ${turno.medicoApellidos}",
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = turno.totalPacientes.toString(),
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = turno.pacientesAtendidos.toString(),
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center
+            )
+            Box(modifier = Modifier.weight(1f)) {
+                val progressAnimatedValue = remember { androidx.compose.animation.core.Animatable(0f) }
+                LaunchedEffect(turno) {
+                    if (turno.totalPacientes > 0) {
+                        progressAnimatedValue.animateTo(
+                            targetValue = turno.pacientesAtendidos.toFloat() / turno.totalPacientes.toFloat(),
+                            animationSpec = tween(1000, easing = FastOutSlowInEasing)
+                        )
+                    }
+                }
+
+                LinearProgressIndicator(
+                    progress = 1f,
+                    color = Color(0xFF424242),
+                    modifier = Modifier
+                        .height(6.dp)
+                        .fillMaxWidth()
+                )
+                LinearProgressIndicator(
+                    progress = progressAnimatedValue.value,
+                    color = if (turno.esExitoso()) Color(0xFF00C853) else Color(0xFFFF5252),
+                    modifier = Modifier
+                        .height(6.dp)
+                        .fillMaxWidth()
+                )
+            }
+            if (Auth.rol != "medico")
+                Box(
+                    modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Ver",
+                        color = linkColor,
+                        modifier = Modifier
+                            .clickable(onClick = onViewConsultas)
+                            .padding(4.dp)
+                    )
+                }
         }
     }
 }

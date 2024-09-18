@@ -1,162 +1,182 @@
 package vistas.componentes
 
-import androidx.compose.animation.*
-import androidx.compose.animation.core.*
-import androidx.compose.desktop.ui.tooling.preview.Preview
+import EditConsultaForm
+import EditDepartamentoForm
+import EditHospitalForm
+import EditMedicoForm
+import EditPacienteForm
+import EditUnidadForm
+import ElegantButton
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.nativeKeyCode
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.application
+import androidx.compose.ui.window.DialogWindow
+import androidx.compose.ui.window.WindowPosition
+import androidx.compose.ui.window.rememberDialogState
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalAnimationApi::class)
-@Composable
-fun RegistrationFormDialog() {
-    var showDialog by remember { mutableStateOf(false) }
-    var name by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var additionalField by remember { mutableStateOf("") }
 
-    Button(
-        onClick = { showDialog = true },
-        colors = ButtonDefaults.buttonColors(backgroundColor = Color.Transparent),
-        border = ButtonDefaults.outlinedBorder
+
+object EditDialogManager {
+    private val isDialogOpenState = mutableStateOf(false)
+    private val texto = mutableStateOf("")
+    private val entidad = mutableStateOf("")
+    private var acceptAction : ((Map<String, String>) -> Unit)? = null
+    private var initialValues = mutableStateOf<Map<String, String>>(mapOf())
+
+    fun showDialog(
+        textoP: String,
+        acceptActionP: (Map<String, String>) -> Unit,
+        entidadP: String,
+        initialValuesP: Map<String, String>
     ) {
-        Text("Abrir formulario")
+        isDialogOpenState.value = true
+        texto.value = textoP
+        entidad.value = entidadP
+        acceptAction = acceptActionP
+        initialValues.value = initialValuesP
     }
 
-    AnimatedVisibility(
-        visible = showDialog,
-        enter = fadeIn() + slideInVertically(),
-        exit = fadeOut() + slideOutVertically()
-    ) {
-        Dialog(onDismissRequest = { showDialog = false }) {
-            Surface(
-                modifier = Modifier.width(400.dp).height(500.dp),
-                color = Color(0xFF111827),
-                shape = MaterialTheme.shapes.medium
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            "Formulario de registro",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                        IconButton(onClick = { showDialog = false }) {
-                            Icon(Icons.Default.Close, contentDescription = "Cerrar", tint = Color.White)
+    val isDialogOpen: Boolean
+        get() = isDialogOpenState.value
+
+    fun hideDialog() {
+        isDialogOpenState.value = false
+    }
+
+    @Composable
+    fun DialogHost() {
+        var isLoading by remember { mutableStateOf(true) }
+        val isDialogOpen by isDialogOpenState
+        val windowState = rememberDialogState(
+            position = WindowPosition(Alignment.Center),
+            size = DpSize(400.dp, 500.dp)
+        )
+        if (isDialogOpen) {
+            rememberCoroutineScope().launch {
+                delay(300)
+                isLoading = false
+            }
+            if (!isLoading)
+                DialogWindow(
+                    onCloseRequest = { hideDialog() },
+                    state = windowState,
+                    undecorated = true,
+                    transparent = true,
+                    onKeyEvent = { keyEvent ->
+                        if (keyEvent.key.nativeKeyCode == Key.Escape.nativeKeyCode) {
+                            hideDialog()
+                            true
+                        } else {
+                            false
                         }
                     }
-                    Text(
-                        "Complete el formulario para registrarse. Haga clic en enviar cuando termine.",
-                        color = Color(0xFFa0aec0),
-                        fontSize = 14.sp
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Column(
-                        modifier = Modifier
-                            .verticalScroll(rememberScrollState())
-                            .weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        CustomOutlinedTextField(
-                            value = name,
-                            onValueChange = { name = it },
-                            label = "Nombre",
-                            placeholder = "Ingrese su nombre"
-                        )
-                        CustomOutlinedTextField(
-                            value = email,
-                            onValueChange = { email = it },
-                            label = "Correo electrónico",
-                            placeholder = "Ingrese su correo"
-                        )
-                        CustomOutlinedTextField(
-                            value = password,
-                            onValueChange = { password = it },
-                            label = "Contraseña",
-                            placeholder = "Cree una contraseña"
-                        )
-                        CustomOutlinedTextField(
-                            value = additionalField,
-                            onValueChange = { additionalField = it },
-                            label = "Campo adicional",
-                            placeholder = "Información extra"
-                        )
-                        // Puedes añadir más campos aquí si es necesario
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(
-                        onClick = {
-                            // Aquí puedes manejar la lógica de envío del formulario
-                            println("Formulario enviado")
-                            showDialog = false
+                ) {
+                    EditDialog(
+                        onDismiss = { isLoading = true; hideDialog() },
+                        onAccept = { updatedValues ->
+                            acceptAction?.invoke(updatedValues)
+                            hideDialog()
                         },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF2563eb))
-                    ) {
-                        Text("Enviar", color = Color.White)
+                        texto = texto.value,
+                        entidad = entidad.value,
+                        initialValues = initialValues.value
+                    )
+                }
+        }
+    }
+}
+
+@Composable
+fun EditDialog(
+    onDismiss: () -> Unit,
+    onAccept: (Map<String, String>) -> Unit,
+    texto: String,
+    entidad: String,
+    initialValues: Map<String, String>
+) {
+    var formValues by remember { mutableStateOf(mapOf<String, String>()) }
+
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Box(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .background(
+                    Brush.linearGradient(
+                        colors = listOf(Color(0xb624272c), Color(0xad121b2f))
+                    ),
+                    shape = RoundedCornerShape(10.dp)
+                )
+                .border(.8.dp, Color(125, 138, 150, 0xdf), RoundedCornerShape(10.dp))
+                .padding(16.dp)
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    texto,
+                    color = Color.White,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Muestra el formulario correspondiente
+                formValues = when (entidad) {
+                    "Consulta" -> EditConsultaForm(initialValues)
+                    "Departamento" -> EditDepartamentoForm(initialValues)
+                    "Hospital" -> EditHospitalForm(initialValues)
+                    "Medico" -> EditMedicoForm(initialValues)
+                    "Paciente" -> EditPacienteForm(initialValues)
+//                    "Turno" -> EditTurnoForm(initialValues)
+                    "Unidad" -> EditUnidadForm(initialValues)
+                    else -> {
+                        ToastManager.showToast("Error: Entidad no reconocida", ToastType.ERROR)
+                        mapOf()
                     }
+                }
+
+//                Spacer(modifier = Modifier.height(24.dp))
+
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    ElegantButton(
+                        text = "Aceptar",
+                        emoji = "✅",
+                        onClick = {onAccept(formValues)}
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    ElegantButton(
+                        text = "Cancelar",
+                        emoji = "❌",
+                        onClick = onDismiss
+                    )
                 }
             }
         }
     }
 }
 
-@Composable
-fun CustomOutlinedTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    label: String,
-    placeholder: String
-) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text(label, color = Color.White, fontSize = 12.sp) },
-        placeholder = { Text(placeholder, fontSize = 12.sp) },
-        colors = TextFieldDefaults.outlinedTextFieldColors(
-            textColor = Color.White,
-            backgroundColor = Color(0xFF1f2937),
-            focusedBorderColor = Color(0xFF4b5563),
-            unfocusedBorderColor = Color(0xFF4b5563)
-        ),
-        modifier = Modifier.fillMaxWidth().height(52.dp)
-    )
-}
 
-@Preview
-@Composable
-fun PreviewRegistrationFormDialog() {
-    MaterialTheme {
-        Surface {
-            RegistrationFormDialog()
-        }
-    }
-}
-
-fun main() = application {
-    Window(onCloseRequest = ::exitApplication) {
-        PreviewRegistrationFormDialog()
-    }
-}

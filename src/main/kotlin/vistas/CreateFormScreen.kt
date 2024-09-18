@@ -9,9 +9,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.singleWindowApplication
+import vistas.colores.textColor
 import vistas.componentes.*
-import vistas.form.*
+import vistas.form.create.*
+import vistas.form.edit.*
 
 
 @Composable
@@ -21,13 +22,13 @@ fun CreateFormScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF121212)),
+            .background(Color(0xffffffff)),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Card(
             modifier = Modifier.fillMaxSize(.9f),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+            colors = CardDefaults.cardColors(containerColor = Color(0xffffffff)),
             shape = RoundedCornerShape(12.dp)
         ) {
             Column(
@@ -43,7 +44,7 @@ fun CreateFormScreen() {
                     Text(
                         text = "Crear Nuevo Registro",
                         style = MaterialTheme.typography.headlineSmall,
-                        color = Color(0xFFFFFFFF),
+                        color = textColor,
                         modifier = Modifier.padding(bottom = 24.dp)
                     )
                     CustomDropdown(

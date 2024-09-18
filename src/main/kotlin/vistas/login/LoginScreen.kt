@@ -1,20 +1,29 @@
 package vistas.login
+
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import auth.Auth
@@ -22,189 +31,140 @@ import global.Global
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import vistas.DashboardApp
+import vistas.colores.textColor
 import vistas.componentes.ShowToast
 import vistas.componentes.ToastHost
 import vistas.componentes.ToastManager
 import vistas.componentes.ToastType
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun LoginScreen() {
+fun LoginScreen(onLoginSuccess: () -> Unit) {
     var username by remember { mutableStateOf(TextFieldValue("")) }
     var password by remember { mutableStateOf(TextFieldValue("")) }
-    var isLoading by remember { mutableStateOf(false) }
-    var showDashboardApp by remember { mutableStateOf(false) }
-    var isButtonLoading by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
-    var role by remember { mutableStateOf("") }
-    var hospital by remember { mutableStateOf("") }
-    var errorAuthToast by remember { mutableStateOf(false) }
+    var isVisible by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
+    LaunchedEffect(Unit) {
+        isVisible = true
+    }
 
-
-
-    if (role != "") {
-        when(role){
-            "medico" -> {
-                Global.selectedHospital = hospital
-                DashboardApp()
-            }
-            "admin_hospital" -> {
-                Global.selectedHospital = hospital
-                DashboardApp()
-            }
-            "admin_general" -> {
-                DefaultPreview()
-            }
-            else-> DefaultPreview()
-
-        }
-
-    } else {
-        Box(modifier = Modifier.fillMaxSize()) {
-            // Fondo con imagen oscurecida
-            Image(
-                painter = painterResource("fondo-login.png"), // Asegúrate de tener esta imagen en tus recursos
-                contentDescription = "Background",
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-            Box(
+    Box(
+        modifier = Modifier.fillMaxSize().background(Color.Transparent),
+        contentAlignment = Alignment.Center
+    ) {
+        AnimatedVisibility(
+            visible = isVisible,
+            enter = fadeIn(animationSpec = tween(1000)) + expandVertically(animationSpec = tween(1000)),
+            exit = fadeOut(animationSpec = tween(1000)) + shrinkVertically(animationSpec = tween(1000))
+        ) {
+            androidx.compose.material.Surface(
+                elevation = 10.dp,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.6f))
-            )
+                    .width(400.dp)
+                    .wrapContentHeight(),
+                shape = RoundedCornerShape(16.dp),
+                color = Color.White
 
-            // Contenido del login
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Card(
+                Column(
                     modifier = Modifier
-                        .width(500.dp)
-                        .padding(16.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.8f))
+                        .padding(32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Column(
+                    Image(
+                        painter = painterResource("profile.jpg"),
+                        contentDescription = "User Icon",
                         modifier = Modifier
-                            .padding(32.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "Iniciar sesión",
-                            color = Color.White,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(bottom = 20.dp)
-                        )
+                            .size(80.dp)
+                            .clip(CircleShape)
+                    )
 
-                        TextField(
-                            value = username,
-                            onValueChange = { username = it },
-                            label = { Text("Usuario", color = Color.Gray) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 16.dp),
-                            colors = TextFieldDefaults.colors(
-                                focusedTextColor = Color.White,
-                                unfocusedTextColor = Color.White,
-                                focusedContainerColor = Color(0xFF1E1E1E),
-                                unfocusedContainerColor = Color(0xFF1E1E1E),
-                                cursorColor = Color.White,
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent
-                            )
-                        )
-
-                        TextField(
-                            value = password,
-                            onValueChange = { password = it },
-                            label = { Text("Contraseña", color = Color.Gray) },
-                            visualTransformation = PasswordVisualTransformation(),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 24.dp),
-                            colors = TextFieldDefaults.colors(
-                                focusedTextColor = Color.White,
-                                unfocusedTextColor = Color.White,
-                                focusedContainerColor = Color(0xFF1E1E1E),
-                                unfocusedContainerColor = Color(0xFF1E1E1E),
-                                cursorColor = Color.White,
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent
-                            )
-                        )
-
-                        Button(
-                            onClick = {
-                                scope.launch {
-                                    isButtonLoading = true
-                                    val session = Auth.login(username.text, password.text)
-                                    if (session != null) {
-                                        role = session.user?.role.toString()
-                                        hospital = session.user?.userMetadata!!["hospital_id"].toString()
-                                        isButtonLoading = false
-                                        // Autenticación exitosa
-                                        isLoading = true
-                                        showDashboardApp = true
-                                    }else {
-                                        ToastManager.showToast("Usted no tiene permiso para esta acción", ToastType.ERROR)
-                                        isButtonLoading = false
-                                        // Implement your error toast here
-                                    }
+                    Text(
+                        text = "Iniciar sesión",
+                        color = Color.DarkGray,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 24.dp, top = 15.dp)
+                    )
 
 
+                    CustomTextField(
+                        value = username,
+                        onValueChange = { username = it },
+                        placeholder = "Usuario",
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
 
+                    CustomTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        placeholder = "Contraseña",
+                        visualTransformation = PasswordVisualTransformation(),
+                        modifier = Modifier.padding(bottom = 24.dp)
+                    )
 
+                    var buttonState by remember { mutableStateOf(ButtonState.Idle) }
 
-
-
-
-
-
-
+                    Button(
+                        onClick = {
+                            buttonState = ButtonState.Loading
+                            coroutineScope.launch {
+                                val session = Auth.login(username.text, password.text)
+                                if (session != null) {
+                                    buttonState = ButtonState.Finished
+                                } else {
+                                    ToastManager.showToast("Credenciales incorrectas", ToastType.ERROR)
+                                    buttonState = ButtonState.Idle
+                                    // Implement your error toast here
                                 }
+                            }
+
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp)
+                            .graphicsLayer {
+                                shape = RoundedCornerShape(25.dp)
+                                clip = true
                             },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(50.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.Red,
-                                contentColor = Color.White
-                            ),
-                            enabled = !isButtonLoading
-                        ) {
-                            if (isButtonLoading) {
-                                CircularProgressIndicator(
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xef070000),
+                            contentColor = Color.White
+                        ),
+                        enabled = buttonState != ButtonState.Loading
+                    ) {
+                        AnimatedContent(
+                            targetState = buttonState,
+                            transitionSpec = {
+                                fadeIn(animationSpec = tween(150, delayMillis = 150)) with
+                                        fadeOut(animationSpec = tween(150))
+                            }
+                        ) { state ->
+                            when (state) {
+                                ButtonState.Idle -> Text("Entrar", fontSize = 18.sp)
+                                ButtonState.Loading -> CircularProgressIndicator(
                                     modifier = Modifier.size(24.dp),
                                     color = Color.White
                                 )
-                            } else {
-                                Text(
-                                    text = "Iniciar sesión",
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
+
+                                ButtonState.Finished -> {
+                                    Text("¡Bienvenido!", fontSize = 18.sp)
+                                    coroutineScope.launch {
+                                        delay(1000)
+                                        buttonState = ButtonState.Idle
+                                        onLoginSuccess()
+                                    }
+                                }
+
                             }
                         }
-
                     }
+
+
                 }
             }
-
-//            if (isLoading) {
-//                CircularProgressIndicator(
-//                    modifier = Modifier
-//                        .size(48.dp)
-//                        .align(Alignment.Center),
-//                    color = Color.Red
-//                )
-//            }
-            ToastHost()
         }
     }
+    ToastHost()
 }

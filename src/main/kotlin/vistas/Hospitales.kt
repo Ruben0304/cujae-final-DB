@@ -19,10 +19,13 @@ import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.Hospital
 import dao.HospitalDAO
+import kotlinx.coroutines.launch
 import modelos.Hospital
 import vistas.colores.hospitalGradient
+import vistas.componentes.AceptCancelDialogManager
 import vistas.componentes.InfoItem
 import vistas.componentes.RotatingCard
+import vistas.nav.NavManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview
@@ -30,6 +33,7 @@ import vistas.componentes.RotatingCard
 fun HospitalListContent() {
     var hospitales by remember { mutableStateOf(listOf<Hospital>()) }
     var isLoading by remember { mutableStateOf(true) }
+    val corrutineScope = rememberCoroutineScope()
 
 
     // Simular carga de doctores
@@ -89,14 +93,21 @@ fun HospitalListContent() {
                         GlassmorphismDialogManager.showDialog(
                             listOf(
                                 DialogButton(
-                                    "Aceptar",
-                                    "✅"
+                                    "Editar",
+                                    "✍🏼"
                                 ) { println("Aceptar clicked"); GlassmorphismDialogManager.hideDialog() },
                                 DialogButton(
-                                    "Cancelar",
-                                    "❌"
-                                ) { println("Cancelar clicked"); GlassmorphismDialogManager.hideDialog() },
-                                DialogButton("Más información", "ℹ️") { println("Más información clicked") }
+                                    "Eliminar",
+                                    "❗"
+                                ) { AceptCancelDialogManager.showDialog("Seguro que desea eliminar ?",
+                                    {
+                                        corrutineScope.launch {
+                                            HospitalDAO.eliminar(hospital.codigo)
+                                            NavManager.navController.navigate("hospitales")
+                                        }
+
+                                    }); GlassmorphismDialogManager.hideDialog() },
+
                             )
                         )
                     }

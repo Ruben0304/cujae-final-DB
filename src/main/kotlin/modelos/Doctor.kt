@@ -5,7 +5,11 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Doctor(
+    @SerialName("codigo") val codigo: String,
     @SerialName("nombre") val nombre: String,
+    @SerialName("unidad") val unidad: String,
+    @SerialName("departamento") val departamento: String,
+    @SerialName("hospital") val hospital: String,
     @SerialName("apellidos") val apellidos: String,
     @SerialName("especialidad") val especialidad: String,
     @SerialName("numero_licencia") val numeroLicencia: String,

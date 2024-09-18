@@ -38,4 +38,13 @@ object DepartamentoDAO {
             )
         )
     }
+
+    suspend fun eliminar(d: String, h: String)= withContext(Dispatchers.IO) {
+        try {
+            Supabase.coneccion.postgrest.rpc("eliminar_departamento", mapOf("p_codigo_departamento" to d, "p_codigo_hosp" to h))
+        }catch (e: Exception){
+            println(e.message)
+        }
+
+    }
 }

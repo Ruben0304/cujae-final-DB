@@ -11,17 +11,29 @@ import modelos.Doctor
 import modelos.Hospital
 import modelos.HospitalNombres
 import supabase.Supabase
+import vistas.componentes.ToastManager
+import vistas.componentes.ToastType
 
 object HospitalDAO {
 
-    suspend fun getAllHospitals(): List<Hospital> {
-        return Supabase.coneccion.postgrest.rpc("resumen_por_hospitales")
-            .decodeList<Hospital>()
+    suspend fun getAllHospitals() = withContext(Dispatchers.IO) {
+        try {
+             Supabase.coneccion.postgrest.rpc("resumen_por_hospitales"){
+            }.decodeList<Hospital>()
+        } catch (e: Exception) {
+           println(e.message)
+            emptyList()
+        }
     }
 
-    suspend fun getHospitals(): List<HospitalNombres> {
-        return Supabase.coneccion.from("hospital").select()
-            .decodeList<HospitalNombres>()
+    suspend fun getHospitals() = withContext(Dispatchers.IO) {
+        try {
+             Supabase.coneccion.from("hospital").select()
+                .decodeList<HospitalNombres>()
+        } catch (e: Exception) {
+             emptyList()
+        }
+
     }
 
 
@@ -34,13 +46,36 @@ object HospitalDAO {
     suspend fun crearHospital(
         codigo: String,
         nombre: String
-    ) = withContext(Dispatchers.IO) {
-        Supabase.coneccion.postgrest.rpc(
-            "crear_hospital",
-            CrearHospitalRequest(
-                p_codigo = codigo,
-                p_nombre = nombre
+    ) {
+        try {
+            Supabase.coneccion.postgrest.rpc(
+                "crear_hospital",
+                CrearHospitalRequest(
+                    p_codigo = codigo,
+                    p_nombre = nombre
+                )
             )
-        )
+        } catch (e: Exception) {
+            ToastManager.showToast(e.message.toString(), ToastType.ERROR)
+        }
+
+    }
+
+
+    suspend fun eliminar(codigo: String) = withContext(Dispatchers.IO) {
+        try {
+            Supabase.coneccion.from("hospital").update({
+                set("activo", false)
+            }) {
+                filter {
+                    eq("codigo", codigo)
+                }
+            }
+        } catch (e: Exception) {
+            println(e.message)
+            e.printStackTrace()
+        }
+
+
     }
 }

@@ -27,6 +27,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.nativeKeyCode
 import androidx.compose.ui.input.pointer.pointerMoveFilter
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -92,7 +93,7 @@ object AceptCancelDialogManager {
                     AceptCancelDialog(
                         onDismiss = { isLoading = true; hideDialog() },
                         onAccept = {
-                            acceptAction?.invoke(AceptCancelDialogManager.textfieldValor.value)
+                            acceptAction
                             hideDialog()
                         },
                         texto = texto.value
@@ -108,7 +109,7 @@ fun AceptCancelDialog(
     onAccept: (String) -> Unit, // Acción de aceptar con el texto del TextField
     texto: String
 ) {
-    var textovalor by remember { mutableStateOf("") }
+    var textovalor by remember { mutableStateOf(TextFieldValue("")) }
     val animatedAlpha by animateFloatAsState(
         targetValue = 1f,
         animationSpec = tween(500)
@@ -176,7 +177,7 @@ fun AceptCancelDialog(
                     ElegantButton(
                         text = "Aceptar",
                         emoji = "✅",
-                        onClick = { onAccept(textovalor) }
+                        onClick = { onAccept(textovalor.text) }
                     )
                     Spacer(modifier = Modifier.width(16.dp))
                     ElegantButton(

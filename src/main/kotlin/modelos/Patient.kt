@@ -1,5 +1,6 @@
 package modelos
 
+import kotlinx.datetime.LocalDate
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -16,20 +17,31 @@ data class Patient(
 
 @Serializable
 data class PatientTable(
-    @SerialName("numero_historia_clinica") val numeroHistoriaClinica: String,
+    @SerialName("ci") val numeroHistoriaClinica: String,
     @SerialName("nombre") val nombre: String,
     @SerialName("apellidos") val apellidos: String,
     @SerialName("fecha_nacimiento") val fechaNacimiento: String, // Puede ser String o LocalDate
     @SerialName("direccion") val direccion: String,
-    @SerialName("unidad_codigo") val unidadCodigo: String,
-    @SerialName("departamento_codigo") val departamentoCodigo: String,
-    @SerialName("hospital_codigo") val hospitalCodigo: String
+)
+
+@Serializable
+data class PatientRequest(
+    val ci: String,
+    val nombre: String,
+    val apellidos: String,
+    val fecha_nacimiento: LocalDate,
+    val direccion: String
+)
+
+@Serializable
+data class PacienteParaComprobar(
+    @SerialName("ci") val ci: String,
 )
 
 @Serializable
 data class Registro(
     val registro_id : Int,
-    val numero_historia_clinica: String,
+    val ci: String,
     val nombre: String,
     val apellidos: String,
     val fecha_nacimiento: String, // Puedes usar `LocalDate` si prefieres trabajar con fechas

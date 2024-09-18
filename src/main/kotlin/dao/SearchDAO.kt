@@ -1,10 +1,15 @@
 package dao
+
+import dao.PatientDAO.OPCSRequest
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.rpc
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
+import modelos.Registro
 import supabase.Supabase
+import vistas.componentes.ToastManager
+import vistas.componentes.ToastType
 
 object SearchDAO {
 
@@ -49,34 +54,64 @@ object SearchDAO {
 
 
     // Buscar Causas de No Atención
-        suspend fun buscarCausasNoAtencion(criterio: String): List<Causa> = withContext(Dispatchers.IO) {
+    suspend fun buscarCausasNoAtencion(criterio: String): List<Causa> = withContext(Dispatchers.IO) {
+        try {
             supabaseClient.rpc("buscar_causas_no_atencion", mapOf("p_criterio" to criterio))
                 .decodeList<Causa>()
+        } catch (e: Exception) {
+            ToastManager.showToast(e.message.toString(), ToastType.ERROR)
+            emptyList()
         }
 
-        // Buscar Consultas
-        suspend fun buscarConsultas(criterio: String): List<Consulta> = withContext(Dispatchers.IO) {
+    }
+
+    // Buscar Consultas
+    suspend fun buscarConsultas(criterio: String): List<Consulta> = withContext(Dispatchers.IO) {
+        try {
             supabaseClient.rpc("buscar_consultas", mapOf("p_criterio" to criterio))
                 .decodeList<Consulta>()
+        } catch (e: Exception) {
+            ToastManager.showToast(e.message.toString(), ToastType.ERROR)
+            emptyList()
         }
 
-        // Buscar Hospitales
-        suspend fun buscarHospitales(criterio: String): List<Hospital> = withContext(Dispatchers.IO) {
+    }
+
+    // Buscar Hospitales
+    suspend fun buscarHospitales(criterio: String): List<Hospital> = withContext(Dispatchers.IO) {
+        try {
             supabaseClient.rpc("buscar_hospitales", mapOf("p_criterio" to criterio))
                 .decodeList<Hospital>()
+        } catch (e: Exception) {
+            ToastManager.showToast(e.message.toString(), ToastType.ERROR)
+            emptyList()
         }
 
-        // Buscar Médicos
-        suspend fun buscarMedicos(criterio: String): List<Medico> = withContext(Dispatchers.IO) {
+    }
+
+    // Buscar Médicos
+    suspend fun buscarMedicos(criterio: String): List<Medico> = withContext(Dispatchers.IO) {
+        try {
             supabaseClient.rpc("buscar_medicos", mapOf("p_criterio" to criterio))
                 .decodeList<Medico>()
+        } catch (e: Exception) {
+            ToastManager.showToast(e.message.toString(), ToastType.ERROR)
+            emptyList()
         }
 
-        // Buscar Pacientes
-        suspend fun buscarPacientes(criterio: String): List<Paciente> = withContext(Dispatchers.IO) {
+    }
+
+    // Buscar Pacientes
+    suspend fun buscarPacientes(criterio: String): List<Paciente> = withContext(Dispatchers.IO) {
+        try {
             supabaseClient.rpc("buscar_pacientes", mapOf("p_criterio" to criterio))
                 .decodeList<Paciente>()
+        } catch (e: Exception) {
+            ToastManager.showToast(e.message.toString(), ToastType.ERROR)
+            emptyList()
         }
+
+    }
 
 
 }

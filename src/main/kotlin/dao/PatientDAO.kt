@@ -2,14 +2,15 @@ package dao
 
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.query.Count
 import io.github.jan.supabase.postgrest.rpc
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import modelos.Patient
-import modelos.PatientTable
-import modelos.Registro
+import modelos.*
 import supabase.Supabase
+import vistas.componentes.ToastManager
+import vistas.componentes.ToastType
 
 object PatientDAO {
 
@@ -24,11 +25,17 @@ object PatientDAO {
         hospitalId: String,
         departamentoId: String,
         unidadId: String
-    ): List<Patient> = withContext(Dispatchers.IO) {
-        Supabase.coneccion.postgrest.rpc(
-            "obtener_pacientes_por_unidad_departamento_hospital",
-            PURequest(unidadId, departamentoId, hospitalId)
-        ).decodeList<Patient>()
+    ): List<Patient> {
+        try {
+            return Supabase.coneccion.postgrest.rpc(
+                "obtener_pacientes_por_unidad_departamento_hospital",
+                PURequest(unidadId, departamentoId, hospitalId)
+            ).decodeList<Patient>()
+        } catch (e: Exception) {
+            ToastManager.showToast(e.message.toString(), ToastType.ERROR)
+            return emptyList()
+        }
+
     }
 
 
@@ -71,13 +78,38 @@ object PatientDAO {
 
     suspend fun getPacientesPorHospital(hospitalCodigo: String): List<PatientTable> =
         withContext(Dispatchers.IO) {
-            Supabase.coneccion.from("paciente")
-                .select {
-                    filter {
-                        eq("hospital_codigo", hospitalCodigo)
+            try {
+                Supabase.coneccion.from("paciente")
+                    .select {
+                        filter {
+                            eq("hospital_codigo", hospitalCodigo)
+                        }
                     }
-                }
-                .decodeList<PatientTable>()
+                    .decodeList<PatientTable>()
+            } catch (e: Exception) {
+                println(e.message)
+                emptyList()
+            }
+
+        }
+
+    suspend fun comprobarPaciente(id: String) =
+        withContext(Dispatchers.IO) {
+
+            try {
+                val count: Int = Supabase.coneccion.from("paciente")
+                    .select {
+                        filter {
+                            eq("ci", id)
+                        }
+                    }.decodeList<PacienteParaComprobar>().size
+                count == 1
+
+            } catch (e: Exception) {
+                println(e.message)
+                false
+            }
+
         }
 
 
@@ -117,8 +149,30 @@ object PatientDAO {
         departamentoCodigo: String,
         hospitalCodigo: String
     ): List<Registro> = withContext(Dispatchers.IO) {
-        Supabase.coneccion.postgrest.rpc("obtener_pacientes_con_estado_y_causa", OPCSRequest(unidadCodigo, departamentoCodigo, hospitalCodigo))
-            .decodeList<Registro>()
+        try {
+            Supabase.coneccion.postgrest.rpc(
+                "obtener_pacientes_con_estado_y_causa",
+                OPCSRequest(unidadCodigo, departamentoCodigo, hospitalCodigo)
+            )
+                .decodeList<Registro>()
+        } catch (e: Exception) {
+//            ToastManager.showToast(e.message.toString(), ToastType.ERROR)
+            println("errorrr :" + e.message)
+            emptyList()
+        }
+
+    }
+
+    suspend fun insert(patient: PatientRequest) = withContext(Dispatchers.IO) {
+        try {
+            Supabase.coneccion.from("paciente").insert(patient){
+                select()
+            }.decodeSingle<PatientRequest>()
+        }catch (e: Exception){
+            println(e.message)
+            null
+        }
+
     }
 
 }

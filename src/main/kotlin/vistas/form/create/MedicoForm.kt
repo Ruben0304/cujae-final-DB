@@ -1,4 +1,4 @@
-package vistas.form
+package vistas.form.create
 
 
 import androidx.compose.foundation.layout.Spacer
@@ -9,20 +9,23 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import dao.PatientDAO
+import dao.DoctorDAO
 import kotlinx.coroutines.launch
 import vistas.componentes.SubmitButton
 import vistas.componentes.TextAreaField
 import vistas.componentes.TextInputField
-import java.time.LocalDate
+
 
 @Composable
-fun CreatePacienteForm() {
-    var numeroHistoriaClinica by remember { mutableStateOf("") }
+fun CreateMedicoForm() {
+    var codigo by remember { mutableStateOf("") }
     var nombre by remember { mutableStateOf("") }
     var apellidos by remember { mutableStateOf("") }
-    var fechaNacimiento by remember { mutableStateOf("") }
-    var direccion by remember { mutableStateOf("") }
+    var especialidad by remember { mutableStateOf("") }
+    var numeroLicencia by remember { mutableStateOf("") }
+    var telefono by remember { mutableStateOf("") }
+    var aniosExperiencia by remember { mutableStateOf("") }
+    var datosContacto by remember { mutableStateOf("") }
     var unidadCodigo by remember { mutableStateOf("") }
     var departamentoCodigo by remember { mutableStateOf("") }
     var hospitalCodigo by remember { mutableStateOf("") }
@@ -32,23 +35,29 @@ fun CreatePacienteForm() {
         modifier = Modifier.fillMaxSize().padding(16.dp)
     ) {
         item {
-            TextInputField(
-                value = numeroHistoriaClinica,
-                onValueChange = { numeroHistoriaClinica = it },
-                label = "Número de historia clínica"
-            )
+            TextInputField(value = codigo, onValueChange = { codigo = it }, label = "Código de médico")
             Spacer(modifier = Modifier.height(16.dp))
             TextInputField(value = nombre, onValueChange = { nombre = it }, label = "Nombre")
             Spacer(modifier = Modifier.height(16.dp))
             TextInputField(value = apellidos, onValueChange = { apellidos = it }, label = "Apellidos")
             Spacer(modifier = Modifier.height(16.dp))
+            TextInputField(value = especialidad, onValueChange = { especialidad = it }, label = "Especialidad")
+            Spacer(modifier = Modifier.height(16.dp))
             TextInputField(
-                value = fechaNacimiento,
-                onValueChange = { fechaNacimiento = it },
-                label = "Fecha de nacimiento"
+                value = numeroLicencia,
+                onValueChange = { numeroLicencia = it },
+                label = "Número de licencia"
             )
             Spacer(modifier = Modifier.height(16.dp))
-            TextAreaField(value = direccion, onValueChange = { direccion = it }, label = "Dirección")
+            TextInputField(value = telefono, onValueChange = { telefono = it }, label = "Teléfono")
+            Spacer(modifier = Modifier.height(16.dp))
+            TextInputField(
+                value = aniosExperiencia,
+                onValueChange = { aniosExperiencia = it },
+                label = "Años de experiencia"
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            TextAreaField(value = datosContacto, onValueChange = { datosContacto = it }, label = "Datos de contacto")
             Spacer(modifier = Modifier.height(16.dp))
             TextInputField(value = unidadCodigo, onValueChange = { unidadCodigo = it }, label = "Código de unidad")
             Spacer(modifier = Modifier.height(16.dp))
@@ -68,12 +77,15 @@ fun CreatePacienteForm() {
 
                 onClicked = {
                     corrutineScope.launch {
-                        PatientDAO.crearPaciente(
-                            numeroHistoriaClinica,
+                        DoctorDAO.crearMedico(
+                            codigo,
                             nombre,
                             apellidos,
-                            LocalDate.parse(fechaNacimiento).toString(),
-                            direccion,
+                            especialidad,
+                            numeroLicencia,
+                            telefono,
+                            aniosExperiencia.toInt(),
+                            datosContacto,
                             unidadCodigo,
                             departamentoCodigo,
                             hospitalCodigo

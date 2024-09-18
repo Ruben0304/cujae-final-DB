@@ -4,6 +4,7 @@ import DialogButton
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,12 +25,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import vistas.colores.textColor
+import  androidx.compose.material.Surface
 
 import kotlin.math.absoluteValue
 
@@ -50,27 +54,38 @@ fun RotatingCard(
         animationSpec = tween(durationMillis = 300)
     )
 
-    Box(
+    val interactionSource = remember { MutableInteractionSource() }
+
+    Surface(
+
         modifier = Modifier
             .size(190.dp, 254.dp)
             .graphicsLayer { rotationY = rotation }
-            .clickable { isRotated = !isRotated }
-            .clip(RoundedCornerShape(16.dp))
-            .border(
-                width = .5.dp,
-                color = Color.DarkGray,
-                shape = RoundedCornerShape(16.dp)
-            )
-    ) {
+            .clickable(
+                onClick = { isRotated = !isRotated },
+                indication = null, // Desactiva el efecto de clic
+                interactionSource = interactionSource // Desactiva el efecto de enfoque
+            ),
+//            .clip(RoundedCornerShape(16.dp))
+//            .border(
+//                width = .3.dp,
+//                color = Color.LightGray,
+//                shape = RoundedCornerShape(16.dp)
+//            )
+        elevation = 12.dp,
+        shape = RoundedCornerShape(16.dp),
+
+        ) {
         if (rotation.absoluteValue < 90f) {
-            Box(
+            Surface(
+                elevation = 10.dp,
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color(0xFF151515))
+                    .background(Color(0xfffdfcfc))
                     .clip(RoundedCornerShape(5.dp))
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
-                    FrontContent(frontGradient, labelText, avatar, titleText, subtitleText,onMoreClick)
+                    FrontContent(frontGradient, labelText, avatar, titleText, subtitleText, onMoreClick)
                 }
             }
         } else {
@@ -133,15 +148,16 @@ fun FrontContent(
             ) {
                 Text(
                     text = titleText,
-                    color = Color.White,
+                    color = textColor,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.fillMaxWidth()
                 )
                 Text(
                     text = subtitleText,
-                    color = Color(0xFFFFFFFF).copy(alpha = 0.55f),
-                    fontSize = 8.sp,
+                    color = Color(0xff494444).copy(alpha = 0.55f),
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(top = 5.dp)
                 )
             }
@@ -150,14 +166,14 @@ fun FrontContent(
         Row(
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .padding(end = 8.dp, top = 8.dp)
+                .padding(end = 8.dp)
                 .clickable { onMoreClick() },
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Icon(
                 imageVector = Icons.Outlined.MoreHoriz,
                 contentDescription = "Acciones",
-                tint = Color(255,255,255),
+                tint = textColor,
                 modifier = Modifier.size(28.dp)
 
             )
@@ -172,13 +188,15 @@ data class InfoItem(
 )
 
 @Composable
-fun BackSide(infoItems: List<InfoItem>, gradient: List<Color> ) {
+fun BackSide(infoItems: List<InfoItem>, gradient: List<Color>) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background( brush = Brush.linearGradient(
-                colors = gradient
-            ))
+            .background(
+                brush = Brush.linearGradient(
+                    colors = gradient
+                )
+            )
             .clip(RoundedCornerShape(16.dp))
             .border(1.dp, Color(0xFF333333), RoundedCornerShape(16.dp))
             .padding(20.dp)
@@ -212,8 +230,8 @@ fun InfoItemLoad(icon: ImageVector, label: String, value: String) {
         Column {
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
-                color = Color(0xFF999999)
+                style = MaterialTheme.typography.labelSmall.copy(fontSize = 12.sp),
+                color = Color(0xffffffff)
             )
             Text(
                 text = value,
