@@ -5,7 +5,7 @@ import io.github.jan.supabase.postgrest.rpc
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import modelos.Departamento
+import modelos.*
 import supabase.Supabase
 
 
@@ -46,5 +46,25 @@ object DepartamentoDAO {
             println(e.message)
         }
 
+    }
+
+    suspend fun resumenProcesoD(d: String, h: String)= withContext(Dispatchers.IO){
+        try {
+            Supabase.coneccion.postgrest.rpc("resumen_proceso_departamento_hospital",DResumenProcesoParam(d,h)).decodeList<DResumenProcesoResult>()
+        }catch (e: Exception){
+            println(e.message)
+            null
+        }
+    }
+
+    suspend fun pacientesNoAtendidos(d: String,h: String)= withContext(Dispatchers.IO){
+        try {
+            Supabase.coneccion.postgrest.rpc("pacientes_no_atendidos_por_departamento",
+                DPacientesNoAtendParam(d,h)
+            ).decodeList<DPacientesNoAtendResult>()
+        }catch (e: Exception){
+            println(e.message)
+            null
+        }
     }
 }

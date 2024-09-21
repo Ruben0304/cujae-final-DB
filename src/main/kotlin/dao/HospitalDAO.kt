@@ -1,6 +1,5 @@
 package dao
 
-import dao.DoctorDAO.MURequest
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.rpc
@@ -77,12 +76,33 @@ object HospitalDAO {
 
     }
 
-    suspend fun resumenProceso(codigo: String) = withContext(Dispatchers.IO) {
+    suspend fun resumenProceso(h: String) = withContext(Dispatchers.IO) {
         try {
-            Supabase.coneccion.postgrest.rpc("resumen_proceso_hospital", HResumenProcesoParam(codigo)).decodeSingle<HResumenProcesoHospitalResult>()
+            Supabase.coneccion.postgrest.rpc("resumen_proceso_hospital", HResumenProcesoParam(h)).decodeList<HResumenProcesoResult>()
         } catch (e: Exception){
             println(e.message)
             null
         }
     }
+
+    suspend fun resumenConsultasExitosas(h: String)= withContext(Dispatchers.IO){
+        try {
+      Supabase.coneccion.postgrest.rpc("listado_unidades_consultas_exitosas_por_hospital", HResumenConsultasExitosasParam(h)).decodeList<HResumenConsultasExitosasResult>()
+        }catch (e: Exception){
+            println(e.message)
+            null
+        }
+    }
+
+    suspend fun pacientesNoAtendidos(h: String)= withContext(Dispatchers.IO){
+        try {
+            Supabase.coneccion.postgrest.rpc("pacientes_no_atendidos_por_hospital",
+                HPacientesNoAtendParam(h)
+            ).decodeList<HPacientesNoAtendResult>()
+        }catch (e: Exception){
+            println(e.message)
+            null
+        }
+    }
+
 }
