@@ -1,12 +1,11 @@
-package vistas.componentes
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileCopy
+import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -15,20 +14,31 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import dao.DepartamentoDAO
+import dao.HospitalDAO
+import dao.UnidadDAO
+import kotlinx.coroutines.launch
 
 @Composable
 fun DesktopReportGenerator() {
     val reportParams = mapOf(
-        "ventas" to listOf("Fecha inicio", "Fecha fin", "Categoría"),
-        "inventario" to listOf("Almacén", "Categoría"),
-        "clientes" to listOf("Tipo de cliente", "Región"),
-        "financiero" to listOf("Año", "Trimestre", "Departamento")
+        "resumenProceso" to listOf("Hospital"),
+        "resumenConsultasExitosas" to listOf("Hospital"),
+        "hospConMasPacient" to emptyList<String>(),
+        "resumen" to emptyList<String>(),
+        "listadoMedicos" to listOf("Hospital", "Departamento (opcional)", "Unidad (opcional)"),
+        "listadoPacientes" to listOf("Hospital", "Departamento (opcional)", "Unidad (opcional)"),
+        "resumenProcesoDepartamento" to listOf("Departamento", "Hospital"),
+        "resumenProcesoUnidad" to listOf("Unidad", "Departamento", "Hospital"),
+        "revisarTurnos" to listOf("Hospital", "Departamento"),
+        "resumenConsultasExitosasUnidad" to listOf("Unidad", "Departamento", "Hospital")
     )
 
     var selectedReport by remember { mutableStateOf<String?>(null) }
     var isDialogOpen by remember { mutableStateOf(false) }
     var params by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
     var isParamsFilled by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     fun handleReportSelect(value: String) {
         selectedReport = value
@@ -50,7 +60,50 @@ fun DesktopReportGenerator() {
     }
 
     fun handleGeneratePDF() {
-        println("Generando PDF para el reporte: $selectedReport con parámetros: $params")
+        coroutineScope.launch {
+            val result = when (selectedReport) {
+                "resumenProceso" -> HospitalDAO.resumenProceso(params["Hospital"] ?: "")
+                "resumenConsultasExitosas" -> HospitalDAO.resumenConsultasExitosas(params["Hospital"] ?: "")
+                "hospConMasPacient" -> HospitalDAO.hospConMasPacient()
+                "resumen" -> HospitalDAO.resumen()
+                "listadoMedicos" -> {
+                    when {
+                        params["Unidad (opcional)"]?.isNotEmpty() == true ->
+                            HospitalDAO.listadoMedicos(params["Unidad (opcional)"] ?: "", params["Departamento (opcional)"] ?: "", params["Hospital"] ?: "")
+                        params["Departamento (opcional)"]?.isNotEmpty() == true ->
+                            HospitalDAO.listadoMedicos(params["Departamento (opcional)"] ?: "", params["Hospital"] ?: "")
+                        else -> HospitalDAO.listadoMedicos(params["Hospital"] ?: "")
+                    }
+                }
+                "listadoPacientes" -> {
+                    when {
+                        params["Unidad (opcional)"]?.isNotEmpty() == true ->
+                            HospitalDAO.listadoPacientes(params["Hospital"] ?: "", params["Departamento (opcional)"] ?: "", params["Unidad (opcional)"] ?: "")
+                        params["Departamento (opcional)"]?.isNotEmpty() == true ->
+                            HospitalDAO.listadoPacientes(params["Hospital"] ?: "", params["Departamento (opcional)"] ?: "")
+                        else -> HospitalDAO.listadoPacientes(params["Hospital"] ?: "")
+                    }
+                }
+                "resumenProcesoDepartamento" -> DepartamentoDAO.resumenProceso(params["Departamento"] ?: "", params["Hospital"] ?: "")
+                "resumenProcesoUnidad" -> UnidadDAO.resumenProceso(params["Unidad"] ?: "", params["Departamento"] ?: "", params["Hospital"] ?: "")
+                "revisarTurnos" -> UnidadDAO.revisarTurnos(params["Hospital"] ?: "", params["Departamento"] ?: "")
+                "resumenConsultasExitosasUnidad" -> UnidadDAO.resumenConsultasExitosas(params["Unidad"] ?: "", params["Departamento"] ?: "", params["Hospital"] ?: "")
+                else -> null
+            }
+
+            if (result != null) {
+                val creadorPDF = CreadorPDF()
+                creadorPDF.generarPdfDesdeDataClass(
+                    outputPath = "./",
+                    fileName = "${selectedReport}.pdf",
+                    title = selectedReport ?: "Reporte",
+                    lista = result
+                )
+                println("PDF generado: ${selectedReport}.pdf")
+            } else {
+                println("No se pudo generar el PDF. Resultado nulo.")
+            }
+        }
     }
 
     Column(
@@ -94,7 +147,7 @@ fun DesktopReportGenerator() {
 @Composable
 fun DropdownMenuDemo(selectedReport: String?, onReportSelect: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-    val reportList = listOf("ventas", "inventario", "clientes", "financiero")
+    val reportList = listOf("resumenProceso", "resumenConsultasExitosas", "hospConMasPacient", "resumen", "listadoMedicos", "listadoPacientes", "resumenProcesoDepartamento", "resumenProcesoUnidad", "revisarTurnos", "resumenConsultasExitosasUnidad")
 
     Box {
         OutlinedButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
@@ -107,7 +160,7 @@ fun DropdownMenuDemo(selectedReport: String?, onReportSelect: (String) -> Unit) 
                     onReportSelect(report)
                     expanded = false
                 }) {
-                    Text(report.capitalize())
+                    Text(report)
                 }
             }
         }
