@@ -16,7 +16,7 @@ data class DResumenProcesoParam(
 )
 
 @Serializable
-data class DResumenProcesoResult(
+data class ResumenProcesoResult(
     val hospital_nombre: String,
     val departamento_nombre: String,
     val unidad_nombre: String,
@@ -33,24 +33,3 @@ data class DResumenProcesoResult(
     val pacientes_no_atendidos_desconocidos: Long
 )
 
-@Serializable
-data class DPacientesNoAtendParam(
-    @SerialName("p_departamento_codigo") val departamento: String,
-    @SerialName("p_hospital_codigo") val hospital: String
-
-)
-
-
-@Serializable
-data class DPacientesNoAtendResult(
-    @SerialName("hospital_nombre") val hospital: String,
-    @SerialName("departamento_nombre") val departamento: String,
-    @SerialName("unidad_nombre") val unidad: String,
-    @SerialName("numero_turno") val numTurno: Int,
-    @SerialName("total_pacientes_no_atendidos") val totalPacNoAtend: Int,
-    @SerialName("numero_historia_clinica") val numHistClinica: String,
-    @SerialName("paciente_nombre") val nombPac: String,
-    @SerialName("paciente_apellidos") val apellPac: String,
-    val direccion: String,
-    val causa: String
-)

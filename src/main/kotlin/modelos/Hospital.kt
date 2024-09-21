@@ -16,32 +16,32 @@ data class Hospital(
 
 @Serializable
 data class HospitalNombres(
-     val codigo: String,
-     val nombre: String,
+    val codigo: String,
+    val nombre: String,
 )
 
 @Serializable
 data class HResumenProcesoParam(
-    val p_hospital_codigo : String,
+    val p_hospital_codigo: String,
 )
 
-@Serializable
-data class HResumenProcesoResult(
-    val hospital_nombre: String,
-    val departamento_nombre: String,
-    val unidad_nombre: String,
-    val numero_turno: Int,
-    val pacientes_atendidos: Long,
-    val total_pacientes: Long,
-    val porcentaje_atendidos: Double,
-    val pacientes_no_atendidos: Long,
-    val pacientes_dados_alta: Long,
-    val pacientes_no_atendidos_extranjero: Long,
-    val pacientes_no_atendidos_fuera_provincia: Long,
-    val pacientes_no_atendidos_hospitalizados: Long,
-    val pacientes_no_atendidos_otros: Long,
-    val pacientes_no_atendidos_desconocidos: Long
-)
+//@Serializable
+//data class ResumenProcesoResult(
+//    val hospital_nombre: String,
+//    val departamento_nombre: String,
+//    val unidad_nombre: String,
+//    val numero_turno: Int,
+//    val pacientes_atendidos: Long,
+//    val total_pacientes: Long,
+//    val porcentaje_atendidos: Double,
+//    val pacientes_no_atendidos: Long,
+//    val pacientes_dados_alta: Long,
+//    val pacientes_no_atendidos_extranjero: Long,
+//    val pacientes_no_atendidos_fuera_provincia: Long,
+//    val pacientes_no_atendidos_hospitalizados: Long,
+//    val pacientes_no_atendidos_otros: Long,
+//    val pacientes_no_atendidos_desconocidos: Long
+//)
 
 
 //@Serializable
@@ -104,25 +104,85 @@ data class HResumenConsultasExitosasResult(
 
 
 @Serializable
-data class HPacientesNoAtendParam(
-    @SerialName("p_hospital_codigo") val hospital: String
+data class HMasPacientesResult(
+    val hospital_nombre: String,
+    val cantidad_pacientes: Int
+)
 
+@Serializable
+data class ResumenResult(
+    val hospital_codigo: String,
+    val hospital_nombre: String,
+    val cantidad_departamentos: Int,
+    val cantidad_unidades: Int,
+    val cantidad_medicos: Int,
+    val cantidad_pacientes: Int
+)
+
+@Serializable
+data class ListadoMedResult(
+    val hospital_nombre: String,
+    val departamento_nombre: String,
+    val unidad_nombre: String,
+    val medico_nombre: String,
+    val medico_apellidos: String,
+    val especialidad: String,
+    val numero_licencia: String,
+    val telefono: String,
+    val anios_experiencia: Int,
+    val datos_contacto: String
 )
 
 
 @Serializable
-data class HPacientesNoAtendResult(
-    @SerialName("hospital_nombre") val hospital: String,
-    @SerialName("departamento_nombre") val departamento: String,
-    @SerialName("unidad_nombre") val unidad: String,
-    @SerialName("numero_turno") val numTurno: Int,
-    @SerialName("total_pacientes_no_atendidos") val totalPacNoAtend: Int,
-    @SerialName("numero_historia_clinica") val numHistClinica: String,
-    @SerialName("paciente_nombre") val nombPac: String,
-    @SerialName("paciente_apellidos") val apellPac: String,
-    val direccion: String,
-    val causa: String
+data class ListadoMedParam(
+    val p_hospital_codigo: String,
 )
+
+@Serializable
+data class ListadoMedParamD(
+    val p_departamento_codigo: String,
+    val p_hospital_codigo: String,
+)
+
+@Serializable
+data class ListadoMedParamU(
+    val p_unidad_codigo: String,
+    val p_departamento_codigo: String,
+    val p_hospital_codigo: String,
+)
+
+@Serializable
+data class ListadoPacientesResult(
+    val hospital_nombre: String,
+    val departamento_nombre: String,
+    val unidad_nombre: String,
+    val numero_historia_clinica: String,
+    val paciente_nombre: String,
+    val paciente_apellidos: String,
+    val fecha_nacimiento: String,
+    val direccion: String
+)
+
+@Serializable
+data class ListadoPacParamU(
+    val p_hospital_codigo: String,
+    val p_departamento_codigo: String,
+    val p_unidad_codigo: String,
+)
+
+@Serializable
+data class ListadoPacParamD(
+    val p_hospital_codigo: String,
+    val p_departamento_codigo: String,
+)
+
+@Serializable
+data class ListadoPacParamH(
+    val p_hospital_codigo: String,
+
+)
+
 
 
 

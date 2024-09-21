@@ -15,20 +15,20 @@ object HospitalDAO {
 
     suspend fun getAllHospitals() = withContext(Dispatchers.IO) {
         try {
-             Supabase.coneccion.postgrest.rpc("resumen_por_hospitales"){
+            Supabase.coneccion.postgrest.rpc("resumen_por_hospitales") {
             }.decodeList<Hospital>()
         } catch (e: Exception) {
-           println(e.message)
+            println(e.message)
             emptyList()
         }
     }
 
     suspend fun getHospitals() = withContext(Dispatchers.IO) {
         try {
-             Supabase.coneccion.from("hospital").select()
+            Supabase.coneccion.from("hospital").select()
                 .decodeList<HospitalNombres>()
         } catch (e: Exception) {
-             emptyList()
+            emptyList()
         }
 
     }
@@ -78,31 +78,105 @@ object HospitalDAO {
 
     suspend fun resumenProceso(h: String) = withContext(Dispatchers.IO) {
         try {
-            Supabase.coneccion.postgrest.rpc("resumen_proceso_hospital", HResumenProcesoParam(h)).decodeList<HResumenProcesoResult>()
-        } catch (e: Exception){
+            Supabase.coneccion.postgrest.rpc("resumen_proceso_hospital", HResumenProcesoParam(h))
+                .decodeList<ResumenProcesoResult>()
+        } catch (e: Exception) {
             println(e.message)
             null
         }
     }
 
-    suspend fun resumenConsultasExitosas(h: String)= withContext(Dispatchers.IO){
+    suspend fun resumenConsultasExitosas(h: String) = withContext(Dispatchers.IO) {
         try {
-      Supabase.coneccion.postgrest.rpc("listado_unidades_consultas_exitosas_por_hospital", HResumenConsultasExitosasParam(h)).decodeList<HResumenConsultasExitosasResult>()
-        }catch (e: Exception){
+            Supabase.coneccion.postgrest.rpc(
+                "listado_unidades_consultas_exitosas_por_hospital",
+                HResumenConsultasExitosasParam(h)
+            ).decodeList<HResumenConsultasExitosasResult>()
+        } catch (e: Exception) {
             println(e.message)
             null
         }
     }
 
-    suspend fun pacientesNoAtendidos(h: String)= withContext(Dispatchers.IO){
+
+    suspend fun hospConMasPacient() = withContext(Dispatchers.IO) {
         try {
-            Supabase.coneccion.postgrest.rpc("pacientes_no_atendidos_por_hospital",
-                HPacientesNoAtendParam(h)
-            ).decodeList<HPacientesNoAtendResult>()
-        }catch (e: Exception){
+            Supabase.coneccion.postgrest.rpc("top_5_hospitales_con_mas_de_100_pacientes")
+                .decodeList<HMasPacientesResult>()
+        } catch (e: Exception) {
             println(e.message)
             null
         }
     }
 
+    suspend fun resumen() = withContext(Dispatchers.IO) {
+        try {
+            Supabase.coneccion.postgrest.rpc("resumen_por_hospitales").decodeList<ResumenResult>()
+        } catch (e: Exception) {
+            println(e.message)
+            null
+        }
+    }
+
+    suspend fun listadoMedicos(h: String) = withContext(Dispatchers.IO) {
+        try {
+            Supabase.coneccion.postgrest.rpc("listado_de_medicos_por_hospital", ListadoMedParam(h))
+                .decodeList<ListadoMedResult>()
+        } catch (e: Exception) {
+            println(e.message)
+            null
+        }
+    }
+
+    suspend fun listadoMedicos(d: String, h: String) = withContext(Dispatchers.IO) {
+        try {
+            Supabase.coneccion.postgrest.rpc("listado_de_medicos_por_departamento_hospital", ListadoMedParamD(d, h))
+                .decodeList<ListadoMedResult>()
+        } catch (e: Exception) {
+            println(e.message)
+            null
+        }
+    }
+
+    suspend fun listadoMedicos(u: String, d: String, h: String) = withContext(Dispatchers.IO) {
+        try {
+            Supabase.coneccion.postgrest.rpc(
+                "listado_de_medicos_por_unidad_departamento_hospital",
+                ListadoMedParamU(u, d, h)
+            ).decodeList<ListadoMedResult>()
+        } catch (e: Exception) {
+            println(e.message)
+            null
+        }
+    }
+
+    suspend fun listadoPacientes(h: String, d: String, u: String) = withContext(Dispatchers.IO) {
+        try {
+            Supabase.coneccion.postgrest.rpc("listado_de_pacientes", ListadoPacParamU(h, d, u))
+                .decodeList<ListadoPacientesResult>()
+        } catch (e: Exception) {
+            println(e.message)
+            null
+        }
+    }
+
+    suspend fun listadoPacientes(h: String, d: String) = withContext(Dispatchers.IO) {
+        try {
+            Supabase.coneccion.postgrest.rpc("listado_de_pacientes", ListadoPacParamD(h, d))
+                .decodeList<ListadoPacientesResult>()
+        } catch (e: Exception) {
+            println(e.message)
+            null
+        }
+    }
+
+    suspend fun listadoPacientes(h: String) = withContext(Dispatchers.IO) {
+        try {
+            Supabase.coneccion.postgrest.rpc("listado_de_pacientes", ListadoPacParamH(h))
+                .decodeList<ListadoPacientesResult>()
+        } catch (e: Exception) {
+            println(e.message)
+            null
+        }
+    }
 }

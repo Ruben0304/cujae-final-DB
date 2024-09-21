@@ -112,14 +112,27 @@ class CreadorPDF {
         )
 
         val hospitalResumenProceso = HospitalDAO.resumenProceso("H001")
-        val departamentoResumProceso = DepartamentoDAO.resumenProcesoD("D001", "H001")
-        val unidadResumProceso = UnidadDAO.resumenProcesoU("U001", "D001", "H001")
+        val departamentoResumProceso = DepartamentoDAO.resumenProceso("D001", "H001")
+        val unidadResumProceso = UnidadDAO.resumenProceso("U001", "D001", "H001")
         val listaUnidRevisarTurnos = UnidadDAO.revisarTurnos("H001", "D001")
         val resumConsultasExitosasUnidad = UnidadDAO.resumenConsultasExitosas("U001","D001","H001")
         val resumConsultasExitosasHosp = HospitalDAO.resumenConsultasExitosas("H001")
+
 //        val pacientNoAtendidoUnid = UnidadDAO.pacientesNoAtendidos("U001","D001","H001")
 //        val pacientNoAtendidoDep = DepartamentoDAO.pacientesNoAtendidos("D001","H001")
 //        val pacientNoAtendidHosp = HospitalDAO.pacientesNoAtendidos("H001")
+
+        val hMasPac = HospitalDAO.hospConMasPacient()
+        val resumen = HospitalDAO.resumen()
+        val listMedicPorHospital = HospitalDAO.listadoMedicos("H001")
+        val listMedicPorDepartamento = HospitalDAO.listadoMedicos("D003","H002")
+        val listMedicPorUnidad = HospitalDAO.listadoMedicos("U002","D004","H003")
+
+        val listPacPorHospital = HospitalDAO.listadoPacientes("H001")
+        val listPacPorDepartamento = HospitalDAO.listadoPacientes("H002","D003")
+        val listPacPorUnidad = HospitalDAO.listadoPacientes("H003","D004","U002")
+
+
 
 
         val creadorPDF = CreadorPDF()
@@ -127,7 +140,7 @@ class CreadorPDF {
             outputPath = "./",
             fileName = "report1.pdf",
             title = "Reporte",
-            lista = if (resumConsultasExitosasUnidad != null) resumConsultasExitosasUnidad else emptyList()
+            lista = if (listPacPorHospital != null) listPacPorHospital else emptyList()
         )
     }
 

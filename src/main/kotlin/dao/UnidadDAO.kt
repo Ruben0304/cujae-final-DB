@@ -111,9 +111,9 @@ object UnidadDAO {
 
     }
 
-    suspend fun resumenProcesoU(u:String ,d: String, h: String)= withContext(Dispatchers.IO){
+    suspend fun resumenProceso(u:String ,d: String, h: String)= withContext(Dispatchers.IO){
      try {
-         Supabase.coneccion.postgrest.rpc("resumen_proceso_unidad_departamento_hospital",UResumenProcesoParam(u,d,h)).decodeList<UResumenProcesoResult>()
+         Supabase.coneccion.postgrest.rpc("resumen_proceso_unidad_departamento_hospital",UResumenProcesoParam(u,d,h)).decodeList<ResumenProcesoResult>()
      }catch (e: Exception){
          println(e.message)
          null
@@ -138,12 +138,5 @@ object UnidadDAO {
         }
     }
 
-    suspend fun pacientesNoAtendidos(u: String,d: String,h: String)= withContext(Dispatchers.IO){
-        try {
-            Supabase.coneccion.postgrest.rpc("pacientes_no_atendidos_por_unidad5",UPacientesNoAtendParam(u,d,h)).decodeList<UPacientesNoAtendResult>()
-        }catch (e: Exception){
-            println(e.message)
-            null
-        }
-    }
+
 }
