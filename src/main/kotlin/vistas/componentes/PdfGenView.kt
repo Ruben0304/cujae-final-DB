@@ -1,4 +1,3 @@
-
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -22,16 +21,16 @@ import kotlinx.coroutines.launch
 @Composable
 fun DesktopReportGenerator() {
     val reportParams = mapOf(
-        "resumenProceso" to listOf("Hospital"),
-        "resumenConsultasExitosas" to listOf("Hospital"),
-        "hospConMasPacient" to emptyList<String>(),
-        "resumen" to emptyList<String>(),
-        "listadoMedicos" to listOf("Hospital", "Departamento (opcional)", "Unidad (opcional)"),
-        "listadoPacientes" to listOf("Hospital", "Departamento (opcional)", "Unidad (opcional)"),
-        "resumenProcesoDepartamento" to listOf("Departamento", "Hospital"),
-        "resumenProcesoUnidad" to listOf("Unidad", "Departamento", "Hospital"),
-        "revisarTurnos" to listOf("Hospital", "Departamento"),
-        "resumenConsultasExitosasUnidad" to listOf("Unidad", "Departamento", "Hospital")
+        "Resumen del proceso por hospital" to listOf("Hospital"),
+        "Resumen de consultas exitosas por hospital" to listOf("Hospital"),
+        "Hospitales con mas pacientes" to emptyList<String>(),
+        "Resumen de todos los hospitales" to emptyList<String>(),
+        "Listado de medicos" to listOf("Hospital", "Departamento (opcional)", "Unidad (opcional)"),
+        "Listado de pacientes" to listOf("Hospital", "Departamento (opcional)", "Unidad (opcional)"),
+        "Resumen del proceso por departamento" to listOf("Departamento", "Hospital"),
+        "Resumen del proceso por unidad" to listOf("Unidad", "Departamento", "Hospital"),
+        "Unidades que deben revisar turnos" to listOf("Hospital", "Departamento"),
+        "Resumen de consultas exitosas por unidad" to listOf("Unidad", "Departamento", "Hospital")
     )
 
     var selectedReport by remember { mutableStateOf<String?>(null) }
@@ -62,32 +61,73 @@ fun DesktopReportGenerator() {
     fun handleGeneratePDF() {
         coroutineScope.launch {
             val result = when (selectedReport) {
-                "resumenProceso" -> HospitalDAO.resumenProceso(params["Hospital"] ?: "")
-                "resumenConsultasExitosas" -> HospitalDAO.resumenConsultasExitosas(params["Hospital"] ?: "")
-                "hospConMasPacient" -> HospitalDAO.hospConMasPacient()
-                "resumen" -> HospitalDAO.resumen()
-                "listadoMedicos" -> {
+                "Resumen del proceso por hospital" -> HospitalDAO.resumenProceso(params["Hospital"] ?: "")
+                "Resumen de consultas exitosas por hospital" -> HospitalDAO.resumenConsultasExitosas(
+                    params["Hospital"] ?: ""
+                )
+
+                "Hospitales con mas pacientes" -> HospitalDAO.hospConMasPacient()
+                "Resumen de todos los hospitales" -> HospitalDAO.resumen()
+                "Listado de medicos" -> {
                     when {
                         params["Unidad (opcional)"]?.isNotEmpty() == true ->
-                            HospitalDAO.listadoMedicos(params["Unidad (opcional)"] ?: "", params["Departamento (opcional)"] ?: "", params["Hospital"] ?: "")
+                            HospitalDAO.listadoMedicos(
+                                params["Unidad (opcional)"] ?: "",
+                                params["Departamento (opcional)"] ?: "",
+                                params["Hospital"] ?: ""
+                            )
+
                         params["Departamento (opcional)"]?.isNotEmpty() == true ->
-                            HospitalDAO.listadoMedicos(params["Departamento (opcional)"] ?: "", params["Hospital"] ?: "")
+                            HospitalDAO.listadoMedicos(
+                                params["Departamento (opcional)"] ?: "",
+                                params["Hospital"] ?: ""
+                            )
+
                         else -> HospitalDAO.listadoMedicos(params["Hospital"] ?: "")
                     }
                 }
-                "listadoPacientes" -> {
+
+                "Listado de pacientes" -> {
                     when {
                         params["Unidad (opcional)"]?.isNotEmpty() == true ->
-                            HospitalDAO.listadoPacientes(params["Hospital"] ?: "", params["Departamento (opcional)"] ?: "", params["Unidad (opcional)"] ?: "")
+                            HospitalDAO.listadoPacientes(
+                                params["Hospital"] ?: "",
+                                params["Departamento (opcional)"] ?: "",
+                                params["Unidad (opcional)"] ?: ""
+                            )
+
                         params["Departamento (opcional)"]?.isNotEmpty() == true ->
-                            HospitalDAO.listadoPacientes(params["Hospital"] ?: "", params["Departamento (opcional)"] ?: "")
+                            HospitalDAO.listadoPacientes(
+                                params["Hospital"] ?: "",
+                                params["Departamento (opcional)"] ?: ""
+                            )
+
                         else -> HospitalDAO.listadoPacientes(params["Hospital"] ?: "")
                     }
                 }
-                "resumenProcesoDepartamento" -> DepartamentoDAO.resumenProceso(params["Departamento"] ?: "", params["Hospital"] ?: "")
-                "resumenProcesoUnidad" -> UnidadDAO.resumenProceso(params["Unidad"] ?: "", params["Departamento"] ?: "", params["Hospital"] ?: "")
-                "revisarTurnos" -> UnidadDAO.revisarTurnos(params["Hospital"] ?: "", params["Departamento"] ?: "")
-                "resumenConsultasExitosasUnidad" -> UnidadDAO.resumenConsultasExitosas(params["Unidad"] ?: "", params["Departamento"] ?: "", params["Hospital"] ?: "")
+
+                "Resumen del proceso por departamento" -> DepartamentoDAO.resumenProceso(
+                    params["Departamento"] ?: "",
+                    params["Hospital"] ?: ""
+                )
+
+                "Resumen del proceso por unidad" -> UnidadDAO.resumenProceso(
+                    params["Unidad"] ?: "",
+                    params["Departamento"] ?: "",
+                    params["Hospital"] ?: ""
+                )
+
+                "Unidades que deben revisar turnos" -> UnidadDAO.revisarTurnos(
+                    params["Hospital"] ?: "",
+                    params["Departamento"] ?: ""
+                )
+
+                "Resumen de consultas exitosas por unidad" -> UnidadDAO.resumenConsultasExitosas(
+                    params["Unidad"] ?: "",
+                    params["Departamento"] ?: "",
+                    params["Hospital"] ?: ""
+                )
+
                 else -> null
             }
 
@@ -147,7 +187,18 @@ fun DesktopReportGenerator() {
 @Composable
 fun DropdownMenuDemo(selectedReport: String?, onReportSelect: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-    val reportList = listOf("resumenProceso", "resumenConsultasExitosas", "hospConMasPacient", "resumen", "listadoMedicos", "listadoPacientes", "resumenProcesoDepartamento", "resumenProcesoUnidad", "revisarTurnos", "resumenConsultasExitosasUnidad")
+    val reportList = listOf(
+        "Resumen del proceso por hospital",
+        "Resumen de consultas exitosas por hospital",
+        "Hospitales con mas pacientes",
+        "Resumen de todos los hospitales",
+        "Listado de medicos",
+        "Listado de pacientes",
+        "Resumen del proceso por departamento",
+        "Resumen del proceso por unidad",
+        "Unidades que deben revisar turnos",
+        "Resumen de consultas exitosas por unidad"
+    )
 
     Box {
         OutlinedButton(onClick = { expanded = true }, modifier = Modifier.fillMaxWidth()) {
