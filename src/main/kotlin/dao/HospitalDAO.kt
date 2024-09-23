@@ -25,7 +25,11 @@ object HospitalDAO {
 
     suspend fun getHospitals() = withContext(Dispatchers.IO) {
         try {
-            Supabase.coneccion.from("hospital").select()
+            Supabase.coneccion.from("hospital").select{
+                filter {
+                    eq("activo", true)
+                }
+            }
                 .decodeList<HospitalNombres>()
         } catch (e: Exception) {
             emptyList()

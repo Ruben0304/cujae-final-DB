@@ -18,6 +18,7 @@ import dao.RegistroDAO
 import global.Global
 import kotlinx.coroutines.launch
 import modelos.Registro
+import vistas.colores.textColor
 import vistas.componentes.*
 import vistas.nav.NavManager
 
@@ -53,7 +54,7 @@ fun PatientListContent(unidadCodigo: String, departamentoCodigo: String) {
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(16.dp),
-            color = Color.White
+            color = textColor
         )
 
 

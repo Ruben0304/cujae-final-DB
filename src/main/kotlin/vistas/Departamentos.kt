@@ -181,10 +181,6 @@ fun DepartamentoTable(navController: NavHostController) {
                                         onViewUnits = {NavManager.navController.navigate("unidades/${departamento.departamento_codigo}") }
                                     )
                                 }
-
-                                if (index < departamentos.size - 1) {
-                                    Divider(color = dividerColor, thickness = 0.5.dp)
-                                }
                             }
                         }
                     }
@@ -204,6 +200,7 @@ fun SwipeableRow(
     val coroutineScope = rememberCoroutineScope()
     var offsetX by remember { mutableStateOf(0f) }
     val animatedOffsetX by animateFloatAsState(targetValue = offsetX)
+    val linkColor = Color(0xff5073ec)
 
     Box(
         modifier = Modifier
@@ -277,7 +274,10 @@ fun SwipeableRow(
                 contentAlignment = Alignment.Center
             ) {
                 TextButton(
-                    onClick = onViewUnits
+                    onClick = onViewUnits,
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = linkColor
+                    )
                 ) {
                     Text("Ver unidades")
                 }

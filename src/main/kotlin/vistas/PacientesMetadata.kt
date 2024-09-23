@@ -19,6 +19,7 @@ import global.Global
 import kotlinx.coroutines.launch
 import modelos.PatientTable
 import modelos.Registro
+import vistas.colores.textColor
 import vistas.componentes.*
 import vistas.nav.NavManager
 
@@ -41,7 +42,7 @@ fun PatientInfo() {
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(16.dp),
-            color = Color.White
+            color = textColor
         )
 
 
