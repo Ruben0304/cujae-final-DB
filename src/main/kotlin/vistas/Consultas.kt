@@ -351,7 +351,7 @@ fun SwipeableConsultaRow(
                 Text(icono)
 
                 // DropdownMenu de selección de estado
-                if (Auth.rol =="medico")
+                if (Auth.rol =="medico" && selectedEstado == "pendiente")
                 DropdownMenu(
                     expanded = expanded,
                     onDismissRequest = { expanded = false }
@@ -372,6 +372,7 @@ fun SwipeableConsultaRow(
             }
         }
     }
+
 }
 
 @Composable

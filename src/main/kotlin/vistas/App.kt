@@ -204,6 +204,7 @@ fun AppContent(onLogout: () -> Unit) {
     }
 
     // FAB animado
+    if(Auth.rol != "medico")
     AnimatedFAB(
         expanded = fabExpanded,
         onExpandedChange = { fabExpanded = it },

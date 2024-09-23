@@ -92,90 +92,13 @@ fun PatientListContent(unidadCodigo: String, departamentoCodigo: String) {
                         subtitleText = paciente.ci,
                         infoItems = items
                     ) {
-
-                        GlassmorphismDialogManager.showDialog(
-                            listOf(
-                                DialogButton(
-                                    "Alta",
-                                    "✅"
-                                ) {
-                                    coroutineScope.launch {
-                                        RegistroDAO.cambiarEstadoEnRegistro(
-                                            paciente.registro_id,
-                                            paciente.unidad_codigo,
-                                            paciente.departamento_codigo,
-                                            paciente.hospital_codigo,
-                                            "alta"
-                                        )
-                                        GlassmorphismDialogManager.hideDialog()
-                                        NavManager.navController.navigate("pacientes/${paciente.unidad_codigo}/${paciente.departamento_codigo}")
-                                    }
-                                },
-                                DialogButton(
-                                    "Fallecido",
-                                    "💀"
-                                ) {
-                                    coroutineScope.launch {
-                                        RegistroDAO.cambiarEstadoEnRegistro(
-                                            paciente.registro_id,
-                                            paciente.unidad_codigo,
-                                            paciente.departamento_codigo,
-                                            paciente.hospital_codigo,
-                                            "fallecido"
-                                        )
-                                        GlassmorphismDialogManager.hideDialog()
-                                        NavManager.navController.navigate("pacientes/${paciente.unidad_codigo}/${paciente.departamento_codigo}")
-
-                                    }
-                                },
-                                DialogButton("At.", "🤝") {
-                                    coroutineScope.launch {
-                                        RegistroDAO.cambiarEstadoEnRegistro(
-                                            paciente.registro_id,
-                                            paciente.unidad_codigo,
-                                            paciente.departamento_codigo,
-                                            paciente.hospital_codigo,
-                                            "atendido"
-                                        )
-                                        GlassmorphismDialogManager.hideDialog()
-                                        NavManager.navController.navigate("pacientes/${paciente.unidad_codigo}/${paciente.departamento_codigo}")
-                                    }
-                                },
-                                DialogButton("N.A", "❌") {
-                                    GlassmorphismDialogManager.hideDialog()
-
-                                    CausaDialogManager.showDialog(
-                                        textoP = "Escriba la causa",
-                                        acceptActionP = { causa ->
-                                            coroutineScope.launch {
-                                                RegistroDAO.marcarNoAtendido(
-                                                    paciente.registro_id,
-                                                    paciente.unidad_codigo,
-                                                    paciente.departamento_codigo,
-                                                    paciente.hospital_codigo,
-                                                    causa // Aquí se pasa el valor del TextField como `causa`
-                                                )
-                                                NavManager.navController.navigate("pacientes/${paciente.unidad_codigo}/${paciente.departamento_codigo}")
-                                            }
-                                        }
-                                    )
-                                },
-                                DialogButton(
-                                    "Editar",
-                                    "✍️"
-                                ) {
-//                                    EditDialogManager.showDialog("Editar medico", {})
-                                    GlassmorphismDialogManager.hideDialog()
-                                },
-
-                                )
-                        )
-
+                        ToastManager.showToast("Solo los médicos pueden modificar estados de pacientes",ToastType.INFO)
                     }
                 }
             }
         }
     }
+    ToastHost()
 }
 
 //fun generateDummyPatients(): List<Patient> {

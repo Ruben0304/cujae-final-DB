@@ -167,7 +167,10 @@ fun DashboardContentMedico() {
                 proximaConsulta?.let {
                     StatCard(
                         "Próxima consulta",
-                        formatFechaHora(it.getFormattedFechaHora()),
+                        if (proximaConsulta != null)
+                            formatFechaHora(it.getFormattedFechaHora())
+                        else
+                            "No tienes",
                         Icons.Outlined.Schedule,
                         SoftRed
                     )
@@ -175,7 +178,10 @@ fun DashboardContentMedico() {
                 Spacer(modifier = Modifier.width(16.dp))
                 StatCard(
                     "Siguiente paciente",
-                    "${proximaConsulta?.registro?.paciente?.nombre} ${proximaConsulta?.registro?.paciente?.apellidos}",
+                    if (proximaConsulta != null)
+                    "${proximaConsulta?.registro?.paciente?.nombre} ${proximaConsulta?.registro?.paciente?.apellidos}"
+                    else
+                        "",
                     Icons.Outlined.Sick,
                     SoftGreen
                 )

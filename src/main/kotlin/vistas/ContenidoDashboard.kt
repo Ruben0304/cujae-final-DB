@@ -46,6 +46,7 @@ fun DashboardContent() {
     var fallecidos by remember { mutableStateOf(0) }
     var pendientes by remember { mutableStateOf(0) }
     var dadosDeAlta by remember { mutableStateOf(0) }
+    var totalPacientes by remember { mutableStateOf(0) }
     var cantidadDepartamentos by remember { mutableStateOf(0) }
     var cantidadUnidades by remember { mutableStateOf(0) }
     var isLoading by remember { mutableStateOf(true) }
@@ -66,13 +67,15 @@ fun DashboardContent() {
         if (Auth.hospital != "") {
             try {
                 val conteoPacientes = obtenerConteoPacientesPorEstado(Auth.hospital)
-                    noAtendidos = conteoPacientes.no_atendidos
-                    atendidos = conteoPacientes.atendidos
-                    fallecidos = conteoPacientes.fallecidos
-                    pendientes = conteoPacientes.pendientes
-                    dadosDeAlta = conteoPacientes.dados_de_alta
+                noAtendidos = conteoPacientes.no_atendidos
+                atendidos = conteoPacientes.atendidos
+                fallecidos = conteoPacientes.fallecidos
+                pendientes = conteoPacientes.pendientes
+                dadosDeAlta = conteoPacientes.dados_de_alta
                 cantidadDepartamentos = conteoPacientes.cantidad_departamentos
                 cantidadUnidades = conteoPacientes.cantidad_unidades
+                totalPacientes = noAtendidos + atendidos + pendientes
+
             } catch (e: Exception) {
                 ToastManager.showToast(e.message.toString(), ToastType.INFO)
             }
@@ -151,16 +154,16 @@ fun DashboardContent() {
                     modifier = Modifier.padding(16.dp)
                 ) {
                     AnimatedProgressCard(
-                        "Vivos restantes",
-                        1f - fallecidos.toFloat() / (noAtendidos.toFloat() + atendidos.toFloat()),
+                        "Atendidos",
+                        atendidos.toFloat() / totalPacientes.toFloat(),
                         Color(88, 185, 106)
                     )
 
                     Spacer(modifier = Modifier.width(16.dp))
 
                     AnimatedProgressCard(
-                        "Muertos",
-                        fallecidos.toFloat() / (noAtendidos.toFloat() + atendidos.toFloat()),
+                        "No atendidos",
+                        noAtendidos.toFloat() / totalPacientes.toFloat(),
                         Color(187, 59, 59)
                     )
                 }
