@@ -110,10 +110,10 @@ fun SideBar(navController: NavHostController, onLogout: () -> Unit) {
                             expandedMenu = if (expandedMenu == "Gestión") "" else "Gestión"
                         }
                         if (expandedMenu == "Gestión") {
-
+                            if(Auth.rol == "admin_general")
                                 SideBarSubMenuItem("Hospitales", navController) { navController.navigate("hospitales") }
-                                SideBarSubMenuItem("Departamentos", navController) { navController.navigate("departamentos") }
-                                SideBarSubMenuItem("Unidades", navController) { navController.navigate("unidadesH") }
+                            SideBarSubMenuItem("Departamentos", navController) { navController.navigate("departamentos") }
+                            SideBarSubMenuItem("Unidades", navController) { navController.navigate("unidadesH") }
                         }
 
                         SideBarMenuGroup("Personal", Icons.Default.People, expandedMenu) {

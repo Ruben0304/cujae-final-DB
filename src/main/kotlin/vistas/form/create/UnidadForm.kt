@@ -9,10 +9,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import auth.Auth
+import dao.DepartamentoDAO
+import dao.HospitalDAO
 import dao.UnidadDAO
 import kotlinx.coroutines.launch
+import modelos.Departamento
+import modelos.HospitalNombres
 import vistas.componentes.SubmitButton
 import vistas.componentes.TextInputField
+import vistas.login.CustomDropdown
 
 
 @Composable
@@ -20,9 +26,14 @@ fun CreateUnidadForm() {
     var codigo by remember { mutableStateOf("") }
     var nombre by remember { mutableStateOf("") }
     var ubicacion by remember { mutableStateOf("") }
-    var departamentoCodigo by remember { mutableStateOf("") }
-    var hospitalCodigo by remember { mutableStateOf("") }
+    var departamento by remember { mutableStateOf<String?>(null) }
+    var departamentos by remember { mutableStateOf(listOf<Departamento>()) }
     val corrutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        departamentos = DepartamentoDAO.obtenerDepartamentosPorHospital(Auth.hospital)
+        departamento = departamentos[0].departamento_codigo
+    }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(16.dp)
@@ -34,20 +45,29 @@ fun CreateUnidadForm() {
             Spacer(modifier = Modifier.height(16.dp))
             TextInputField(value = ubicacion, onValueChange = { ubicacion = it }, label = "Ubicación")
             Spacer(modifier = Modifier.height(16.dp))
-            TextInputField(value = departamentoCodigo, onValueChange = { departamentoCodigo = it }, label = "Código de departamento")
-            Spacer(modifier = Modifier.height(16.dp))
-            TextInputField(value = hospitalCodigo, onValueChange = { hospitalCodigo = it }, label = "Código de hospital")
+            if (departamento != null)
+            CustomDropdown(
+                items = departamentos.map { d -> d.departamento_nombre },
+                selectedItem = departamentos.first { d -> d.departamento_codigo == departamento }.departamento_nombre,
+                onItemSelected = {
+                    departamento =
+                        departamentos.first { d -> d.departamento_nombre == it }.departamento_codigo
+                },
+                placeholder = "Departamento",
+                modifier = Modifier.padding(bottom = 24.dp)
+            )
             Spacer(modifier = Modifier.height(24.dp))
             SubmitButton(
                 onClicked = {
                     corrutineScope.launch {
-                        UnidadDAO.crearUnidad(
-                            codigo,
-                            nombre,
-                            ubicacion,
-                            departamentoCodigo,
-                            hospitalCodigo
-                        )
+                        if (departamento != null)
+                            UnidadDAO.crearUnidad(
+                                codigo,
+                                nombre,
+                                ubicacion,
+                                departamento!!,
+                                Auth.hospital
+                            )
                     }
                 }
             )

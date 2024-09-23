@@ -13,12 +13,11 @@ import auth.Auth
 import vistas.colores.textColor
 import vistas.componentes.*
 import vistas.form.create.*
-import vistas.form.edit.*
 
 
 @Composable
 fun CreateFormScreen() {
-    var selectedOption by remember { mutableStateOf("Departamento") }
+    var selectedOption by remember { mutableStateOf(if (Auth.rol == "admin_hospital") "Departamento" else "Hospital") }
 
     Column(
         modifier = Modifier
@@ -49,7 +48,7 @@ fun CreateFormScreen() {
                         modifier = Modifier.padding(bottom = 24.dp)
                     )
                     CustomDropdown(
-                        options = if(Auth.rol == "admin_general") listOf("Departamento","Hospital", "Unidad") else listOf( "Hospital"),
+                        options = if(Auth.rol == "admin_hospital") listOf("Departamento", "Unidad") else listOf("Hospital"),
                         selectedOption = selectedOption,
                         onOptionSelected = { selectedOption = it }
                     )
