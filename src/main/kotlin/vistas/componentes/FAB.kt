@@ -67,7 +67,7 @@ fun AnimatedFAB(
                         Icon(Icons.Outlined.Search, contentDescription = "Buscar")
                     }
                     FloatingActionButton(
-                        onClick = { onExpandedChange(!expanded) },
+                        onClick = {onItemSelected("reportes"); onExpandedChange(!expanded) },
                         containerColor = Color(0xffb79150),
                         contentColor = Color.White
                     ) {

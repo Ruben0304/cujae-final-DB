@@ -1,5 +1,6 @@
 package vistas.nav
 
+import DesktopReportGenerator
 import HospitalListContent
 import PatientInfo
 import PatientListContent
@@ -56,6 +57,7 @@ fun EstablecerRutas(navController: NavHostController) {
         composable("crear") { CreateFormScreen() }
         composable("register") { RegisterScreen() }
         composable("admins") { AccountsTable() }
+        composable("reportes") { DesktopReportGenerator() }
         composable("departamentos") { DepartamentoTable(navController) }
         composable("unidadesH") { UnidadTable(
             onNavigateToPacientes = { unidadCodigo, departamentoCodigo ->
