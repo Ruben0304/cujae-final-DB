@@ -22,6 +22,7 @@ import dao.HospitalDAO
 import kotlinx.coroutines.launch
 import modelos.Hospital
 import vistas.colores.hospitalGradient
+import vistas.colores.textColor
 import vistas.componentes.AceptCancelDialogManager
 import vistas.componentes.InfoItem
 import vistas.componentes.RotatingCard
@@ -53,7 +54,7 @@ fun HospitalListContent() {
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(16.dp),
-            color = Color.White
+            color = textColor
         )
 
 
@@ -89,7 +90,7 @@ fun HospitalListContent() {
                             InfoItem(Icons.Default.MedicalServices, "Médicos", hospital.cantidadMedicos.toString()),
                             InfoItem(Icons.Rounded.Sick, "Pacientes", hospital.cantidadPacientes.toString())
                         )
-                    ){
+                    ) {
                         GlassmorphismDialogManager.showDialog(
                             listOf(
                                 DialogButton(
@@ -99,17 +100,18 @@ fun HospitalListContent() {
                                 DialogButton(
                                     "Eliminar",
                                     "❗"
-                                ) { AceptCancelDialogManager.showDialog("Seguro que desea eliminar ?",
-                                    {
-                                        corrutineScope.launch {
-                                            HospitalDAO.eliminar(hospital.codigo)
-                                            NavManager.navController.navigate("hospitales")
-                                        }
+                                ) {
+                                    corrutineScope.launch {
+                                        println("debe ok")
+                                        HospitalDAO.eliminar(hospital.codigo)
+                                        NavManager.refresh()
+                                        GlassmorphismDialogManager.hideDialog()
 
-                                    }); GlassmorphismDialogManager.hideDialog() },
+                                    }
 
-                            )
-                        )
+                                }
+                            ))
+
                     }
                 }
             }
