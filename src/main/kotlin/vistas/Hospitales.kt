@@ -15,15 +15,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import auth.Auth
 import compose.icons.FontAwesomeIcons
 import compose.icons.fontawesomeicons.Solid
 import compose.icons.fontawesomeicons.solid.Hospital
+import dao.DAOs
 import dao.HospitalDAO
 import kotlinx.coroutines.launch
 import modelos.Hospital
 import vistas.colores.hospitalGradient
 import vistas.colores.textColor
 import vistas.componentes.AceptCancelDialogManager
+import vistas.componentes.EditDialogManager
 import vistas.componentes.InfoItem
 import vistas.componentes.RotatingCard
 import vistas.nav.NavManager
@@ -95,8 +98,30 @@ fun HospitalListContent() {
                             listOf(
                                 DialogButton(
                                     "Editar",
-                                    "✍🏼"
-                                ) { println("Aceptar clicked"); GlassmorphismDialogManager.hideDialog() },
+                                    "✍️"
+                                ) {
+                                    EditDialogManager.showDialog(
+                                        textoP = "Editar Hospital",
+                                        acceptActionP = { updatedValues ->
+                                            updatedValues.forEach(::println)
+                                            corrutineScope.launch {
+                                                try {
+                                                    DAOs.actualizarHospital(
+                                                        codigo = hospital.codigo,
+                                                        nombre = updatedValues["nombre"] ?: ""
+                                                    )
+                                                } catch (e: Exception) {
+                                                    println(e.message)
+                                                }
+                                                NavManager.refresh()
+                                            }
+                                        },
+                                        entidadP = "Hospital",
+                                        initialValuesP = mapOf(
+                                            "nombre" to hospital.nombre
+                                        )
+                                    ); GlassmorphismDialogManager.hideDialog()
+                                },
                                 DialogButton(
                                     "Eliminar",
                                     "❗"

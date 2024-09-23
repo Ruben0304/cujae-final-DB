@@ -154,11 +154,7 @@ fun DepartamentoTable(navController: NavHostController) {
                                                     } catch (e: Exception) {
                                                         println(e.message)
                                                     }
-                                                    NavManager.navController.currentDestination?.route?.let {
-                                                        NavManager.navController.navigate(
-                                                            it
-                                                        )
-                                                    }
+                                                    NavManager.refresh()
                                                 }
                                             },
                                             entidadP = "Departamento",

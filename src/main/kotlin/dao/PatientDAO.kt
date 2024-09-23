@@ -171,4 +171,24 @@ object PatientDAO {
 
     }
 
+
+    suspend fun editar(nombre: String, apellidos: String, direccion: String, ci: String) = withContext(Dispatchers.IO) {
+        try {
+            Supabase.coneccion.from("paciente").update({
+                set("nombre", nombre)
+                set("apellidos", apellidos)
+                set("direccion", direccion)
+            }) {
+                filter {
+                    eq("ci", ci)
+                }
+            }
+        } catch (e: Exception) {
+            println(e.message)
+            e.printStackTrace()
+        }
+
+
+    }
+
 }

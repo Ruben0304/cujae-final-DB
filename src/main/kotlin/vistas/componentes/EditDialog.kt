@@ -14,7 +14,9 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -34,7 +36,6 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-
 
 
 object EditDialogManager {
@@ -70,7 +71,7 @@ object EditDialogManager {
         val isDialogOpen by isDialogOpenState
         val windowState = rememberDialogState(
             position = WindowPosition(Alignment.Center),
-            size = DpSize(400.dp, 500.dp)
+            size = DpSize(600.dp, 700.dp) // Incrementar el tamaño del diálogo
         )
         if (isDialogOpen) {
             rememberCoroutineScope().launch {
@@ -125,21 +126,24 @@ fun EditDialog(
                 .align(Alignment.Center)
                 .background(
                     Brush.linearGradient(
-                        colors = listOf(Color(0xb624272c), Color(0xad121b2f))
+                        colors = listOf(Color(0xfff5f5f5), Color(0xffe0e0e0)) // Colores claros
                     ),
-                    shape = RoundedCornerShape(10.dp)
+                    shape = RoundedCornerShape(20.dp) // Aumentar el redondeo de las esquinas
                 )
-                .border(.8.dp, Color(125, 138, 150, 0xdf), RoundedCornerShape(10.dp))
-                .padding(16.dp)
+                .border(3.dp, Color(0xffb0bec5), RoundedCornerShape(20.dp)) // Borde un poco más grueso
+                .padding(32.dp) // Aumentar padding para hacerlo más grande
+                .fillMaxWidth(0.95f) // Ajustar el ancho al 95% de la pantalla
+                .fillMaxHeight(0.9f) // Ajustar la altura al 90% de la pantalla
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                // Cabecera del diálogo
                 Text(
                     texto,
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold
+                    color = Color.Black, // Texto en negro para claridad
+                    fontSize = 28.sp, // Tamaño del texto más grande
+                    fontWeight = FontWeight.Bold // Hacer el texto más prominente
                 )
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 // Muestra el formulario correspondiente
                 formValues = when (entidad) {
@@ -148,7 +152,6 @@ fun EditDialog(
                     "Hospital" -> EditHospitalForm(initialValues)
                     "Medico" -> EditMedicoForm(initialValues)
                     "Paciente" -> EditPacienteForm(initialValues)
-//                    "Turno" -> EditTurnoForm(initialValues)
                     "Unidad" -> EditUnidadForm(initialValues)
                     else -> {
                         ToastManager.showToast("Error: Entidad no reconocida", ToastType.ERROR)
@@ -156,8 +159,9 @@ fun EditDialog(
                     }
                 }
 
-//                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(28.dp))
 
+                // Botones siempre abajo
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth()
@@ -165,9 +169,9 @@ fun EditDialog(
                     ElegantButton(
                         text = "Aceptar",
                         emoji = "✅",
-                        onClick = {onAccept(formValues)}
+                        onClick = { onAccept(formValues) }
                     )
-                    Spacer(modifier = Modifier.width(16.dp))
+                    Spacer(modifier = Modifier.width(28.dp)) // Aumentar el espacio entre los botones
                     ElegantButton(
                         text = "Cancelar",
                         emoji = "❌",
@@ -178,5 +182,3 @@ fun EditDialog(
         }
     }
 }
-
-

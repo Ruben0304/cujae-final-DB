@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import auth.Auth
+import dao.DAOs
 import dao.DepartamentoDAO
 import dao.UnidadDAO
 import global.Global
@@ -33,6 +34,7 @@ import modelos.Departamento
 import modelos.Unidad
 import vistas.colores.textColor
 import vistas.componentes.AceptCancelDialogManager
+import vistas.componentes.EditDialogManager
 import vistas.componentes.ToastManager
 import vistas.componentes.ToastType
 import vistas.nav.NavManager
@@ -130,7 +132,32 @@ fun UnidadTable(
                                 ) {
 
                                     IconButton(
-                                        onClick = { },
+                                        onClick = { EditDialogManager.showDialog(
+                                            textoP = "Editar unidad",
+                                            acceptActionP = { updatedValues ->
+                                                updatedValues.forEach(::println)
+                                                corrutineScope.launch {
+                                                    try {
+                                                        DAOs.actualizarUnidad(
+                                                            codigo = unidad.codigo,
+                                                            hospitalCodigo = Auth.hospital,
+                                                            ubicacion = updatedValues["ubicacion"] ?: "",
+                                                            nombre = updatedValues["nombre"] ?: "",
+                                                            departamentoCodigo = unidad.departamento
+                                                        )
+                                                    } catch (e: Exception) {
+                                                        println(e.message)
+                                                    }
+                                                    NavManager.refresh()
+                                                }
+                                            },
+                                            entidadP = "Unidad",
+                                            initialValuesP = mapOf(
+//                                                "hospitalCodigo" to Auth.hospital,
+                                                "nombre" to unidad.nombre,
+                                                "ubicacion" to unidad.ubicacion
+                                            )
+                                        )  },
                                         modifier = Modifier
                                             .size(50.dp)
                                             .padding(8.dp),

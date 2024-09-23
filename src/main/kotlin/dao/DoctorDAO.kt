@@ -50,7 +50,7 @@ object DoctorDAO {
     suspend fun eliminarMedico(codigo: String) = withContext(Dispatchers.IO) {
         try {
             Supabase.coneccion.postgrest.rpc(
-                " eliminar_medico", mapOf("p_codigo" to codigo)
+                "eliminar_medico", mapOf("p_codigo" to codigo)
             )
         } catch (e: Exception) {
             println(e.message)

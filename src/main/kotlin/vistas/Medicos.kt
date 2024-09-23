@@ -127,11 +127,7 @@ fun DoctorListContent(departamentoId: String? = null, unidadCodigo: String? = nu
                         ) {
                             GlassmorphismDialogManager.showDialog(
                                 listOf(
-                                    DialogButton("Crear cuenta", "👨🏼‍💻") {
-                                        println("Aceptar clicked")
-                                        GlassmorphismDialogManager.hideDialog()
-                                    },
-                                    DialogButton("Editar", "✍️") {
+                                    DialogButton("Editar", "👨🏼‍💻") {
                                         GlassmorphismDialogManager.hideDialog()
                                         EditDialogManager.showDialog(
                                             textoP = "Editar Médico",
@@ -176,15 +172,12 @@ fun DoctorListContent(departamentoId: String? = null, unidadCodigo: String? = nu
 
                                     },
                                     DialogButton("Eliminar", "❗") {
-                                        AceptCancelDialogManager.showDialog(
-                                            "Seguro que deseas eliminar este médico ?",
-                                            {
-                                                coroutineScope.launch {
-                                                    DoctorDAO.eliminarMedico(doctor.numeroLicencia); NavManager.navController.navigate(
-                                                    "medicos"
-                                                )
-                                                }
-                                            })
+
+                                        coroutineScope.launch {
+                                            DoctorDAO.eliminarMedico(doctor.numeroLicencia); NavManager.navController.navigate(
+                                            "medicos"
+                                        )
+                                        }
                                         GlassmorphismDialogManager.hideDialog()
                                     },
                                 )

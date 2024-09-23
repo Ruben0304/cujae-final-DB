@@ -27,9 +27,6 @@ import vistas.nav.NavManager
 fun PatientListContent(unidadCodigo: String, departamentoCodigo: String) {
     var pacientes by remember { mutableStateOf(listOf<Registro>()) }
     var isLoading by remember { mutableStateOf(true) }
-    var selectedHospital by remember { mutableStateOf<String?>(null) }
-    var selectedDepartamento by remember { mutableStateOf<String?>(null) }
-    var selectedUnidad by remember { mutableStateOf<String?>(null) }
     val estadoColores = mapOf(
         "pendiente" to listOf(Color(0xFFFF7043), Color(0xFFF4511E)),   // Tonalidades más oscuras de naranja
         "atendido" to listOf(Color(0xFF388E3C), Color(0xFF2E7D32)),    // Tonalidades más oscuras de verde

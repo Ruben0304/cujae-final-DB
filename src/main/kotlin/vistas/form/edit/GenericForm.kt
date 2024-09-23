@@ -4,16 +4,36 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.TextField
 import androidx.compose.material.Text
 import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditConsultaForm(initialValues: Map<String, String>): Map<String, String> {
+    // Parsear la fecha y hora inicial desde el string recibido
+    val initialDateTime = remember {
+        LocalDateTime.parse(initialValues["fechaHora"], DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+    }
+    var fecha by remember { mutableStateOf(initialDateTime.toLocalDate()) }
+    var hora by remember { mutableStateOf(initialDateTime.toLocalTime()) }
 
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
-    var fechaHora by remember { mutableStateOf(initialValues["fechaHora"] ?: "") }
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = fecha.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli(),
+        initialDisplayMode = DisplayMode.Input
+
+    )
 
     Column(
         modifier = Modifier
@@ -21,11 +41,87 @@ fun EditConsultaForm(initialValues: Map<String, String>): Map<String, String> {
             .verticalScroll(rememberScrollState())
     ) {
 
-        TextField(value = fechaHora, onValueChange = { fechaHora = it }, label = { Text("Fecha y Hora") })
+        // Mostrar fecha y hora seleccionadas en formato amigable
+        Text(text = "Fecha: ${fecha.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))}")
+        Text(text = "Hora: ${hora.format(DateTimeFormatter.ofPattern("HH:mm"))}")
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = { showDatePicker = true },
+            modifier = Modifier.fillMaxWidth(.4f),
+            colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+        ) {
+            Text("Seleccionar fecha", color = Color.White)
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = { showTimePicker = true },
+            modifier = Modifier.fillMaxWidth(.4f),
+            colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+        ) {
+            Text("Seleccionar hora", color = Color.White)
+        }
+
+        Spacer(modifier = Modifier.height(100.dp))
     }
 
+    // Mostrar DatePicker si está habilitado
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let {
+                        fecha = Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate()
+                    }
+                    showDatePicker = false
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancelar")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    // Mostrar TimePicker si está habilitado
+    if (showTimePicker) {
+        val timePickerState = remember { TimePickerState(initialHour = hora.hour, initialMinute = hora.minute, true) }
+
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    hora = LocalTime.of(timePickerState.hour, timePickerState.minute)
+                    showTimePicker = false
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) {
+                    Text("Cancelar")
+                }
+            },
+            text = {
+                TimePicker(state = timePickerState)
+            }
+        )
+    }
+
+    // Devolver el valor de la fecha y hora formateada para enviar
     return mapOf(
-        "fechaHora" to fechaHora
+        // Sumar un día a la fecha seleccionada antes de formatear
+        "fechaHora" to LocalDateTime.of(fecha, hora).plusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+
     )
 }
 
@@ -49,7 +145,6 @@ fun EditDepartamentoForm(initialValues: Map<String, String>): Map<String, String
 
 @Composable
 fun EditHospitalForm(initialValues: Map<String, String>): Map<String, String> {
-    var codigo by remember { mutableStateOf(initialValues["codigo"] ?: "") }
     var nombre by remember { mutableStateOf(initialValues["nombre"] ?: "") }
 
     Column(
@@ -57,12 +152,10 @@ fun EditHospitalForm(initialValues: Map<String, String>): Map<String, String> {
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        TextField(value = codigo, onValueChange = { codigo = it }, label = { Text("Código") })
         TextField(value = nombre, onValueChange = { nombre = it }, label = { Text("Nombre") })
     }
 
     return mapOf(
-        "codigo" to codigo,
         "nombre" to nombre
     )
 }
@@ -82,7 +175,6 @@ fun EditMedicoForm(initialValues: Map<String, String>): Map<String, String> {
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        TextField(value = codigo, onValueChange = { codigo = it }, label = { Text("Código") })
         TextField(value = telefono, onValueChange = { telefono = it }, label = { Text("Teléfono") })
         TextField(value = aniosExperiencia, onValueChange = { aniosExperiencia = it }, label = { Text("Años de Experiencia") })
         TextField(value = datosContacto, onValueChange = { datosContacto = it }, label = { Text("Datos de Contacto") })
@@ -104,58 +196,49 @@ fun EditMedicoForm(initialValues: Map<String, String>): Map<String, String> {
 
 @Composable
 fun EditPacienteForm(initialValues: Map<String, String>): Map<String, String> {
-    var registroId by remember { mutableStateOf(initialValues["registroId"] ?: "") }
-    var unidadCodigo by remember { mutableStateOf(initialValues["unidadCodigo"] ?: "") }
-    var departamentoCodigo by remember { mutableStateOf(initialValues["departamentoCodigo"] ?: "") }
-    var hospitalCodigo by remember { mutableStateOf(initialValues["hospitalCodigo"] ?: "") }
-    var nuevaDireccion by remember { mutableStateOf(initialValues["nuevaDireccion"] ?: "") }
+
+    var direccion by remember { mutableStateOf(initialValues["direccion"] ?: "") }
+    var nombre by remember { mutableStateOf(initialValues["nombre"] ?: "") }
+    var apellidos by remember { mutableStateOf(initialValues["apellidos"] ?: "") }
 
     Column(
         modifier = Modifier
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        TextField(value = registroId, onValueChange = { registroId = it }, label = { Text("Registro ID") })
-        TextField(value = unidadCodigo, onValueChange = { unidadCodigo = it }, label = { Text("Unidad Código") })
-        TextField(value = departamentoCodigo, onValueChange = { departamentoCodigo = it }, label = { Text("Departamento Código") })
-        TextField(value = hospitalCodigo, onValueChange = { hospitalCodigo = it }, label = { Text("Hospital Código") })
-        TextField(value = nuevaDireccion, onValueChange = { nuevaDireccion = it }, label = { Text("Nueva Dirección") })
+
+        TextField(value = direccion, onValueChange = { direccion = it }, label = { Text("Dirección ") })
+        TextField(value = nombre, onValueChange = { nombre = it }, label = { Text("Nombre") })
+        TextField(value = apellidos, onValueChange = { apellidos = it }, label = { Text("Apellidos") })
     }
 
     return mapOf(
-        "registroId" to registroId,
-        "unidadCodigo" to unidadCodigo,
-        "departamentoCodigo" to departamentoCodigo,
-        "hospitalCodigo" to hospitalCodigo,
-        "nuevaDireccion" to nuevaDireccion
+        "direccion" to direccion,
+        "nombre" to nombre,
+        "apellidos" to apellidos
     )
 }
 
 @Composable
 fun EditUnidadForm(initialValues: Map<String, String>): Map<String, String> {
-    var codigo by remember { mutableStateOf(initialValues["codigo"] ?: "") }
+
     var nombre by remember { mutableStateOf(initialValues["nombre"] ?: "") }
     var ubicacion by remember { mutableStateOf(initialValues["ubicacion"] ?: "") }
-    var departamentoCodigo by remember { mutableStateOf(initialValues["departamentoCodigo"] ?: "") }
-    var hospitalCodigo by remember { mutableStateOf(initialValues["hospitalCodigo"] ?: "") }
+
 
     Column(
         modifier = Modifier
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        TextField(value = codigo, onValueChange = { codigo = it }, label = { Text("Código") })
+
         TextField(value = nombre, onValueChange = { nombre = it }, label = { Text("Nombre") })
         TextField(value = ubicacion, onValueChange = { ubicacion = it }, label = { Text("Ubicación") })
-        TextField(value = departamentoCodigo, onValueChange = { departamentoCodigo = it }, label = { Text("Departamento Código") })
-        TextField(value = hospitalCodigo, onValueChange = { hospitalCodigo = it }, label = { Text("Hospital Código") })
+
     }
 
     return mapOf(
-        "codigo" to codigo,
         "nombre" to nombre,
         "ubicacion" to ubicacion,
-        "departamentoCodigo" to departamentoCodigo,
-        "hospitalCodigo" to hospitalCodigo
     )
 }

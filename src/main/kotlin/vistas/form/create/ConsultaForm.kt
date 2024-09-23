@@ -25,7 +25,6 @@ import java.time.format.DateTimeFormatter
 fun CreateConsultaForm() {
     var fecha by remember { mutableStateOf(LocalDateTime.now().toLocalDate()) } // Solo la fecha
     var hora by remember { mutableStateOf(LocalDateTime.now().toLocalTime()) } // Solo la hora
-    var fechaHora by remember { mutableStateOf("") } // String con fecha y hora formateadas
     var pacienteCI by remember { mutableStateOf("") }
     var nombre by remember { mutableStateOf("") }
     var apellido by remember { mutableStateOf("") }

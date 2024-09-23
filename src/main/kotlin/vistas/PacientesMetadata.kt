@@ -13,6 +13,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import auth.Auth
+import dao.DAOs
+import dao.DoctorDAO
 import dao.PatientDAO
 import dao.RegistroDAO
 import global.Global
@@ -76,7 +78,43 @@ fun PatientInfo() {
                         subtitleText = paciente.ci,
                         infoItems = items
                     ) {
+                        GlassmorphismDialogManager.showDialog(
+                            listOf(
+                                DialogButton("Editar", "👨🏼‍💻") {
+                                    GlassmorphismDialogManager.hideDialog()
+                                    EditDialogManager.showDialog(
+                                        textoP = "Editar paciente",
+                                        acceptActionP = { updatedValues ->
+                                            updatedValues.forEach(::println)
+                                            coroutineScope.launch {
+                                                try {
+                                                    PatientDAO.editar(
+                                                        ci = paciente.ci,
+                                                        direccion = updatedValues["direccion"] ?: "",
+                                                        nombre = updatedValues["nombre"]?: "",
+                                                        apellidos = updatedValues["apellidos"]?: ""
+                                                    )
+                                                }catch (e:Exception){
+                                                    println(e.message)
+                                                }
 
+
+                                                NavManager.refresh()
+                                                println("Deberia estar ok")
+                                            }
+                                        },
+                                        entidadP = "Paciente",
+                                        initialValuesP = mapOf(
+                                            "direccion" to paciente.direccion,
+                                            "nombre" to paciente.nombre,
+                                            "apellidos" to paciente.apellidos,
+                                        )
+                                    )
+
+
+                                },
+                            )
+                        )
                     }
                 }
             }

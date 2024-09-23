@@ -139,11 +139,7 @@ fun ConsultaTable(
                                                     } catch (e: Exception) {
                                                         println(e.message)
                                                     }
-                                                    NavManager.navController.currentDestination?.route?.let {
-                                                        NavManager.navController.navigate(
-                                                            it
-                                                        )
-                                                    }
+                                                    NavManager.refresh()
                                                 }
                                             },
                                             entidadP = "Consulta",
@@ -154,23 +150,17 @@ fun ConsultaTable(
                                     },
                                     onDelete = {
 
-                                        if (Auth.hospital != "")
-                                            AceptCancelDialogManager.showDialog(
-                                                "Seguro que deseas eliminar unidad ?",
-                                                {
-                                                    corrutineScope.launch {
-                                                        ConsultaDAO.eliminar(
-                                                            consulta.registro.unidad_codigo,
-                                                            consulta.registro.departamento_codigo,
-                                                            Auth.hospital,
-                                                            consulta.id_medico,
-                                                            consulta.turno_numero,
-                                                            consulta.consulta_id,
-                                                        )
-                                                        NavManager.navController.navigate("consultas/${unidad}/${departamento}/${numeroTurno}/${medico}")
-                                                    }
-                                                })
-
+                                        corrutineScope.launch {
+                                            ConsultaDAO.eliminar(
+                                                consulta.registro.unidad_codigo,
+                                                consulta.registro.departamento_codigo,
+                                                Auth.hospital,
+                                                consulta.id_medico,
+                                                consulta.turno_numero,
+                                                consulta.consulta_id,
+                                            )
+                                            NavManager.navController.navigate("consultas/${unidad}/${departamento}/${numeroTurno}/${medico}")
+                                        }
 
                                     },
                                     index = index
@@ -182,6 +172,7 @@ fun ConsultaTable(
             }
         }
     }
+    ToastHost()
 }
 
 @Composable
@@ -261,12 +252,46 @@ fun SwipeableConsultaRow(
         }
     }
 
+
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .alpha(animatedProgress.value)
             .offset(y = (20 * (1f - animatedProgress.value)).dp)
     ) {
+        // Icons (Edit and Delete) - To the right, initially hidden
+        if (Auth.rol=="medico")
+        Row(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .alpha((-offsetX / 200f).coerceIn(0f, 1f))
+                .padding(end = 16.dp)
+        ) {
+            IconButton(
+                onClick = onEdit,
+                modifier = Modifier.size(50.dp)
+            ) {
+                Icon(
+                    Icons.Default.Edit,
+                    contentDescription = "Edit",
+                    tint = Color(43, 98, 218),
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            IconButton(
+                onClick = onDelete,
+                modifier = Modifier.size(50.dp)
+            ) {
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = "Delete",
+                    tint = Color(150, 42, 55),
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
         Row(
             modifier = Modifier
                 .offset { IntOffset(animatedOffsetX.roundToInt(), 0) }
@@ -326,6 +351,7 @@ fun SwipeableConsultaRow(
                 Text(icono)
 
                 // DropdownMenu de selección de estado
+                if (Auth.rol =="medico")
                 DropdownMenu(
                     expanded = expanded,
                     onDismissRequest = { expanded = false }
