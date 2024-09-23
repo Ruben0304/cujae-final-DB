@@ -33,6 +33,8 @@ import modelos.Departamento
 import modelos.Unidad
 import vistas.colores.textColor
 import vistas.componentes.AceptCancelDialogManager
+import vistas.componentes.ToastManager
+import vistas.componentes.ToastType
 import vistas.nav.NavManager
 
 
@@ -149,21 +151,15 @@ fun UnidadTable(
 
                                     IconButton(
                                         onClick = {
-
-
-                                            if (Auth.hospital != "")
-                                                AceptCancelDialogManager.showDialog(
-                                                    "Seguro que deseas eliminar unidad ?",
-                                                    {
-                                                        corrutineScope.launch {
-                                                            UnidadDAO.eliminar(
-                                                                unidad.codigo,
-                                                                unidad.departamento,
-                                                                Auth.hospital
-                                                            )
-                                                            NavManager.navController.navigate("unidades/${unidad.departamento}")
-                                                        }
-                                                    })
+                                            corrutineScope.launch {
+                                                UnidadDAO.eliminar(
+                                                    unidad.codigo,
+                                                    unidad.departamento,
+                                                    Auth.hospital
+                                                )
+                                                NavManager.navController.navigate("unidades/${unidad.departamento}")
+                                                ToastManager.showToast("Eliminado correctamente",ToastType.SUCCESS)
+                                            }
 
 
                                         },
