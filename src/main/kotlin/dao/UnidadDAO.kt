@@ -6,8 +6,7 @@ import io.github.jan.supabase.postgrest.rpc
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import modelos.Turno
-import modelos.Unidad
+import modelos.*
 import supabase.Supabase
 import vistas.componentes.ToastManager
 import vistas.componentes.ToastType
@@ -111,4 +110,33 @@ object UnidadDAO {
         }
 
     }
+
+    suspend fun resumenProceso(u:String ,d: String, h: String)= withContext(Dispatchers.IO){
+     try {
+         Supabase.coneccion.postgrest.rpc("resumen_proceso_unidad_departamento_hospital",UResumenProcesoParam(u,d,h)).decodeList<ResumenProcesoResult>()
+     }catch (e: Exception){
+         println(e.message)
+         null
+     }
+    }
+
+    suspend fun revisarTurnos(h: String,d: String)= withContext(Dispatchers.IO){
+        try {
+            Supabase.coneccion.postgrest.rpc("listado_unidades_revisar_turnos",URevisarTurnosParam(h,d)).decodeList<URevisarTurnosResult>()
+        }catch (e: Exception){
+            println(e.message)
+            null
+        }
+    }
+
+    suspend fun resumenConsultasExitosas(u: String,d: String,h: String)= withContext(Dispatchers.IO){
+        try {
+            Supabase.coneccion.postgrest.rpc("listado_unidades_consultas_exitosas_por_unidad",UResumenConsultasExitosasParam(u,d,h)).decodeList<UResumenConsultasExitosasResult>()
+        }catch (e: Exception){
+            println(e.message)
+            null
+        }
+    }
+
+
 }
