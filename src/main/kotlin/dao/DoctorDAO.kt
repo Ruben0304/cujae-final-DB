@@ -6,7 +6,10 @@ import io.github.jan.supabase.postgrest.rpc
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
+import modelos.CrearMedicoRequest
 import modelos.Doctor
+import modelos.DoctorId
+import modelos.UniqueCodeMedico
 import supabase.Supabase
 
 
@@ -17,10 +20,10 @@ object DoctorDAO {
     data class MHRequest(val p_hospital_codigo: String)
 
     @Serializable
-    data class MURequest(val  p_unidad_codigo:String, val p_departamento_codigo:String , val p_hospital_codigo: String)
+    data class MURequest(val p_unidad_codigo: String, val p_departamento_codigo: String, val p_hospital_codigo: String)
 
     @Serializable
-    data class MDRequest(val  p_departamento_codigo:String , val p_hospital_codigo: String)
+    data class MDRequest(val p_departamento_codigo: String, val p_hospital_codigo: String)
 
     suspend fun listar_medicos_por_hospital(hospitalId: String): List<Doctor> = withContext(Dispatchers.IO) {
         Supabase.coneccion.postgrest.rpc(
@@ -29,48 +32,34 @@ object DoctorDAO {
         ).decodeList<Doctor>()
     }
 
-    suspend fun listar_medicos_por_departamento(depaId: String, hospiId: String)= withContext(Dispatchers.IO) {
+    suspend fun listar_medicos_por_departamento(depaId: String, hospiId: String) = withContext(Dispatchers.IO) {
         Supabase.coneccion.postgrest.rpc(
             "listar_medicos_por_departamento",
-            MDRequest(depaId,hospiId)
+            MDRequest(depaId, hospiId)
         ).decodeList<Doctor>()
     }
 
-    suspend fun listar_medicos_por_unidad(unidadId: String,depaId: String, hospiId: String) = withContext(Dispatchers.IO) {
-        Supabase.coneccion.postgrest.rpc(
-            "listar_medicos_por_unidad",
-            MURequest(unidadId,depaId,hospiId)
-        ).decodeList<Doctor>()
-    }
-
-    suspend fun eliminarMedico(codigo: String) = withContext(Dispatchers.IO){
-        try {
-            Supabase.coneccion.postgrest.rpc("eliminar_medico",mapOf("p_codigo" to codigo))
-        }catch (e:Exception){
-            println(e.message)
-            e.printStackTrace()
+    suspend fun listar_medicos_por_unidad(unidadId: String, depaId: String, hospiId: String) =
+        withContext(Dispatchers.IO) {
+            Supabase.coneccion.postgrest.rpc(
+                "listar_medicos_por_unidad",
+                MURequest(unidadId, depaId, hospiId)
+            ).decodeList<Doctor>()
         }
 
+    suspend fun eliminarMedico(codigo: String) = withContext(Dispatchers.IO) {
+        try {
+            Supabase.coneccion.postgrest.rpc(
+                " eliminar_medico", mapOf("p_codigo" to codigo)
+            )
+        } catch (e: Exception) {
+            println(e.message)
+        }
 
     }
 
-    @Serializable
-    data class CrearMedicoRequest(
-        val p_codigo: String,
-        val p_nombre: String,
-        val p_apellidos: String,
-        val p_especialidad: String,
-        val p_numero_licencia: String,
-        val p_telefono: String,
-        val p_anios_experiencia: Int,
-        val p_datos_contacto: String,
-        val p_unidad_codigo: String,
-        val p_departamento_codigo: String,
-        val p_hospital_codigo: String
-    )
 
     suspend fun crearMedico(
-        codigo: String,
         nombre: String,
         apellidos: String,
         especialidad: String,
@@ -78,11 +67,12 @@ object DoctorDAO {
         telefono: String,
         aniosExperiencia: Int,
         datosContacto: String,
-        unidadCodigo: String,
-        departamentoCodigo: String,
+        unidadCodigo: String? = null,
+        departamentoCodigo: String? = null,
         hospitalCodigo: String
     ) = withContext(Dispatchers.IO) {
-        try{
+        try {
+            val codigo = generarCodigoUnico().orEmpty()
             Supabase.coneccion.postgrest.rpc(
                 "crear_medico",
                 CrearMedicoRequest(
@@ -99,8 +89,22 @@ object DoctorDAO {
                     p_hospital_codigo = hospitalCodigo
                 )
             )
-        }catch (e:Exception){
-           e.printStackTrace()
+            codigo
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+
+    }
+
+
+
+    suspend fun generarCodigoUnico() = withContext(Dispatchers.IO) {
+        try {
+            Supabase.coneccion.postgrest.rpc("generate_unique_medico_code").decodeAs<String>()
+        } catch (e: Exception) {
+            println(e.message)
+            null
         }
 
     }

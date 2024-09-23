@@ -1,5 +1,6 @@
 package supabase
 
+import dao.DoctorDAO
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.gotrue.Auth
 import io.github.jan.supabase.serializer.KotlinXSerializer
@@ -54,6 +55,7 @@ data class Reg(val ci: String)
 fun main() = runBlocking {
 
     val supabaseClient = Supabase.coneccion
+    println(DoctorDAO.generarCodigoUnico())
 //    auth.Auth.login("m@m.com", "m")
 //    for (r in supabaseClient.from("paciente").select().decodeList<Reg>()){
 //        println(r.ci)

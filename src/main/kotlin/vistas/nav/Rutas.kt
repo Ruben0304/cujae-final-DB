@@ -1,6 +1,7 @@
 package vistas.nav
 
 import HospitalListContent
+import PatientInfo
 import PatientListContent
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -49,6 +50,7 @@ fun EstablecerRutas(navController: NavHostController) {
         composable("medicos") { DoctorListContent() }
         composable("hospitales") { HospitalListContent() }
         composable("buscar") { SearchScreen() }
+        composable("info_pacientes") { PatientInfo() }
 //        composable("pacientesHospital") { PacientesHospital() }
         composable("ia") { ConsultaIA() }
         composable("crear") { CreateFormScreen() }

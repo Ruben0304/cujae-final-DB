@@ -5,6 +5,7 @@ import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import modelos.PatientRequest
 import modelos.Turno
 import modelos.UserConMetadata
 import modelos.UserMetadata
@@ -82,5 +83,14 @@ object AccountDAO {
         }
     }
 
+    suspend fun vincularMedicoCuenta(medico: String, usuario:String) = withContext(Dispatchers.IO) {
+        try {
+            Supabase.coneccion.from("usuario_medico").insert(mapOf("medico_id" to medico, "user_id" to usuario))
+        }catch (e: Exception){
+            println(e.message)
+            null
+        }
+
+    }
 
 }

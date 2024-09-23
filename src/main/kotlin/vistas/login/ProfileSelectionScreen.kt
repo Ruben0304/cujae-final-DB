@@ -32,6 +32,7 @@ import kotlinx.coroutines.delay
 import modelos.Hospital
 import modelos.HospitalNombres
 import vistas.DashboardApp
+import vistas.colores.textColor
 import vistas.componentes.ShowToast
 import vistas.componentes.ToastHost
 import vistas.componentes.ToastManager
@@ -41,7 +42,7 @@ import kotlin.random.Random
 data class Profile(val name: String, val color: Color, val id: String)
 
 @Composable
-fun DefaultPreview() {
+fun DefaultPreview(onSelect: (String) -> Unit) {
     var hospitals by remember { mutableStateOf<List<HospitalNombres>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var selectedProfile by remember { mutableStateOf<Profile?>(null) }
@@ -52,13 +53,20 @@ fun DefaultPreview() {
     }
 
     if (isLoading) {
-        CircularProgressIndicator(color = Color.Red)
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Color.Black)
+        }
     } else {
         val profiles = hospitals.map { hospital ->
-            Profile(hospital.nombre, Color(Random.nextInt(256), Random.nextInt(256), Random.nextInt(256)),hospital.codigo)
+            Profile(
+                hospital.nombre,
+                Color(Random.nextInt(256), Random.nextInt(256), Random.nextInt(256)),
+                hospital.codigo
+            )
         }
-
-
 
         // Perfil de selección
         AnimatedVisibility(
@@ -79,38 +87,34 @@ fun DefaultPreview() {
             ) {
                 Text(
                     text = "Selecciona tu hospital",
-                    color = Color.White,
+                    color = textColor,
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(bottom = 40.dp)
                 )
 
-
-
                 // Mostrar perfiles con animación
                 AnimatedProfileRow(profiles) { profile ->
-                    Global.selectedHospital = profile.id
-                    selectedProfile = profile
+                    onSelect(profile.id)
                 }
 
                 // Dentro de la columna de selección de perfiles, después de AnimatedProfileRow
-                Button(
-                    onClick = { /* Acción del botón */ },
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = Color(0xff5b5858)
-                    ),
-                    border = BorderStroke(.5.dp, Color(0xff5b5858)), // Borde casi blanco
-                    shape = RoundedCornerShape(4.dp),
-                    modifier = Modifier
-                        .padding(top = 30.dp)
-                        .height(40.dp)
-                        .width(230.dp)
-                ) {
-                    Text(text = "Administrador general")
-                }
-
+//                Button(
+//                    onClick = { /* Acción del botón */ },
+//                    colors = ButtonDefaults.outlinedButtonColors(
+//                        containerColor = Color.Transparent,
+//                        contentColor = Color(0xff5b5858)
+//                    ),
+//                    border = BorderStroke(.5.dp, Color(0xff5b5858)), // Borde casi blanco
+//                    shape = RoundedCornerShape(4.dp),
+//                    modifier = Modifier
+//                        .padding(top = 30.dp)
+//                        .height(40.dp)
+//                        .width(230.dp)
+//                ) {
+//                    Text(text = "Administrador general")
+//                }
             }
             ToastHost()
         }
@@ -128,12 +132,10 @@ fun DefaultPreview() {
             )
         ) {
             DashboardApp()
-
         }
         ToastManager.showToast("Sesión iniciada", ToastType.SUCCESS)
     }
 }
-
 
 
 
@@ -195,7 +197,7 @@ fun ProfileCard(profile: Profile, onClick: () -> Unit) {
 
         Text(
             text = if (profile.name.length > 20) profile.name.take(20) + "..." else profile.name,
-            color = Color.White,
+            color = textColor,
             fontSize = 14.sp,
             modifier = Modifier
                 .padding(horizontal = 8.dp)

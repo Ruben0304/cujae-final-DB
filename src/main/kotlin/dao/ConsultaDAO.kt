@@ -22,12 +22,13 @@ object ConsultaDAO {
         turnoNumero: Int,
         medico: String
     ) = withContext(Dispatchers.IO) {
-
         try {
             val columns = Columns.raw(
                 """
     consulta_id,
     fecha_hora,
+    id_medico,
+    turno_numero,
     registro (
     registro_id,
     unidad_codigo,

@@ -33,6 +33,7 @@ import androidx.navigation.compose.rememberNavController
 import auth.Auth
 import kotlinx.coroutines.launch
 import vistas.componentes.*
+import vistas.login.DefaultPreview
 import vistas.nav.EstablecerRutas
 import vistas.nav.NavManager
 
@@ -44,8 +45,8 @@ fun DashboardApp() {
     val isDialogOpen2 by remember { derivedStateOf { AceptCancelDialogManager.isDialogOpen } }
     val isDialogOpen3 by remember { derivedStateOf { EditDialogManager.isDialogOpen } }
     var isLoggedIn by remember { mutableStateOf(Auth.isSessionActive()) }
+    var isProfileSelectedScreenNeeded by remember { mutableStateOf(false) }
     val corrutineScope = rememberCoroutineScope()
-
 
 
     val colorPalette = listOf(
@@ -85,11 +86,14 @@ fun DashboardApp() {
 
 
 
-
-    LaunchedEffect(isLoggedIn) {
-        Auth.verificarSesionAlIniciar()
+    LaunchedEffect(isLoggedIn, isProfileSelectedScreenNeeded) {
+//        Auth.verificarSesionAlIniciar()
         if (isLoggedIn) {
             navController.navigate("main") {
+                popUpTo("login") { inclusive = true }
+            }
+        } else if (isProfileSelectedScreenNeeded) {
+            navController.navigate("profileScreen") {
                 popUpTo("login") { inclusive = true }
             }
         } else {
@@ -97,8 +101,8 @@ fun DashboardApp() {
                 popUpTo("main") { inclusive = true }
             }
         }
-
     }
+
 
 
 
@@ -116,14 +120,16 @@ fun DashboardApp() {
 
     ) {
 
-        NavHost(navController, startDestination =  "login") {
+        NavHost(navController, startDestination = "login") {
 //        NavHost(navController, startDestination = if (isLoggedIn) "main" else "login") {
             composable("login") {
-                LoginScreen(
-                    onLoginSuccess = {
+                LoginScreen {
+                    if (Auth.rol != "admin_general")
                         isLoggedIn = true
-                    }
-                )
+                    else
+                        isProfileSelectedScreenNeeded = true
+
+                }
             }
             composable("main") {
                 AppContent(
@@ -135,6 +141,18 @@ fun DashboardApp() {
                     }
                 )
             }
+            composable("profileScreen") {
+                DefaultPreview(
+                    onSelect = { profile ->
+                        Auth.hospital = profile
+                        isProfileSelectedScreenNeeded = false
+                        isLoggedIn = true
+                    })
+
+
+            }
+
+
         }
     }
 //    ToastHost()
@@ -148,15 +166,14 @@ fun DashboardApp() {
 
 
 @Composable
-fun AppContent( onLogout: () -> Unit){
+fun AppContent(onLogout: () -> Unit) {
     val innerNavController = rememberNavController()
     var fabExpanded by remember { mutableStateOf(false) }
     Row(modifier = Modifier.fillMaxSize()) {
 
 
-
         // Sidebar
-        SideBar(innerNavController,onLogout)
+        SideBar(innerNavController, onLogout)
         NavManager.navController = innerNavController
 
         // Main Content
@@ -198,8 +215,6 @@ fun AppContent( onLogout: () -> Unit){
 }
 
 
-
-
 fun main() = application {
     val windowState = rememberWindowState(
         position = WindowPosition(Alignment.Center),
@@ -213,7 +228,7 @@ fun main() = application {
         undecorated = true,
         transparent = true
 
-        ) {
+    ) {
         Column(Modifier.shadow(10.dp, RoundedCornerShape(16.dp))) {
             MacOSTitleBar(windowState)
             DashboardApp()

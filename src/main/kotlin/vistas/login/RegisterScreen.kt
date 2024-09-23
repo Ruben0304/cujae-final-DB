@@ -30,9 +30,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
 import auth.Auth
-import dao.HospitalDAO
+import dao.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import modelos.Departamento
 import modelos.HospitalNombres
+import modelos.Unidad
 import vistas.colores.textColor
 import vistas.componentes.SelectInputField
 import vistas.componentes.ToastManager
@@ -45,10 +49,19 @@ fun RegisterScreen() {
     var password by remember { mutableStateOf(TextFieldValue("")) }
     var firstName by remember { mutableStateOf(TextFieldValue("")) }
     var lastName by remember { mutableStateOf(TextFieldValue("")) }
+
+    var xp by remember { mutableStateOf(TextFieldValue("")) }
+    var licencia by remember { mutableStateOf(TextFieldValue("")) }
+    var telefono by remember { mutableStateOf(TextFieldValue("")) }
+    var especialidad by remember { mutableStateOf(TextFieldValue("")) }
+    var departamento by remember { mutableStateOf<String?>(null) }
+    var unidad by remember { mutableStateOf<String?>(null) }
+
     var newRole by remember { mutableStateOf("") }
     var newHospital by remember { mutableStateOf(Auth.hospital) }
     var hospitales by remember { mutableStateOf(listOf<HospitalNombres>()) }
-    var isLoading by remember { mutableStateOf(false) }
+    var departamentos by remember { mutableStateOf(listOf<Departamento>()) }
+    var unidades by remember { mutableStateOf(listOf<Unidad>()) }
     var isVisible by remember { mutableStateOf(false) }
     var buttonState by remember { mutableStateOf(ButtonState.Idle) }
     val scrollState = rememberScrollState()
@@ -57,6 +70,8 @@ fun RegisterScreen() {
     LaunchedEffect(Unit) {
         isVisible = true
         hospitales = HospitalDAO.getHospitals()
+        departamentos = DepartamentoDAO.obtenerDepartamentosPorHospital(Auth.hospital)
+        departamento = departamentos[0].departamento_codigo
     }
 
     Box(
@@ -148,6 +163,61 @@ fun RegisterScreen() {
                                         placeholder = "Rol",
                                         modifier = Modifier.padding(bottom = 24.dp)
                                     )
+                                    if (departamento != null)
+                                        CustomDropdown(
+                                            items = departamentos.map { d -> d.departamento_nombre },
+                                            selectedItem = departamentos.first { d -> d.departamento_codigo == departamento }.departamento_nombre,
+                                            onItemSelected = {
+                                                departamento =
+                                                    departamentos.first { d -> d.departamento_nombre == it }.departamento_codigo
+                                                coroutineScope.launch {
+                                                    unidades = UnidadDAO.obtenerUnidadesPorHospitalYDepartamento(
+                                                        Auth.hospital,
+                                                        departamento!!
+                                                    )
+                                                    if (unidades.isNotEmpty())
+                                                        unidad = unidades[0].codigo
+                                                }
+                                            },
+                                            placeholder = "Departamento",
+                                            modifier = Modifier.padding(bottom = 24.dp)
+                                        )
+
+                                    if (unidad != null)
+                                        CustomDropdown(
+                                            items = unidades.map { u -> u.nombre },
+                                            selectedItem = unidades.first { u -> u.codigo == unidad }.nombre.orEmpty(),
+                                            onItemSelected = {
+                                                unidad = unidades.first { u -> u.nombre == it }.codigo
+                                            },
+                                            placeholder = "Unidad",
+                                            modifier = Modifier.padding(bottom = 24.dp)
+                                        )
+
+                                    CustomTextField(
+                                        value = especialidad,
+                                        onValueChange = { especialidad = it },
+                                        placeholder = "Especialidad",
+                                        modifier = Modifier.padding(bottom = 16.dp)
+                                    )
+                                    CustomTextField(
+                                        value = telefono,
+                                        onValueChange = { telefono = it },
+                                        placeholder = "Telefono",
+                                        modifier = Modifier.padding(bottom = 16.dp)
+                                    )
+                                    CustomTextField(
+                                        value = xp,
+                                        onValueChange = { xp = it },
+                                        placeholder = "Años de experiencia",
+                                        modifier = Modifier.padding(bottom = 16.dp)
+                                    )
+                                    CustomTextField(
+                                        value = licencia,
+                                        onValueChange = { licencia = it },
+                                        placeholder = "No Licencia",
+                                        modifier = Modifier.padding(bottom = 16.dp)
+                                    )
                                 }
 
                                 "admin_general" -> {
@@ -176,24 +246,58 @@ fun RegisterScreen() {
                         }
                     }
 
-                    // Botón estático
+
+// Botón estático
                     Button(
                         onClick = {
-                            buttonState = ButtonState.Loading
                             coroutineScope.launch {
+                                buttonState = ButtonState.Loading
                                 try {
-                                    Auth.crear_usuario(
-                                        username = username.text,
-                                        passwordP = password.text,
-                                        nombre = firstName.text,
-                                        apellido = lastName.text,
-                                        rol = newRole,
-                                        hospital = if (newHospital != "") newHospital else null
-                                    )
+                                    if (newRole == "medico") {
+                                        val medicoCreado = DoctorDAO.crearMedico(
+                                            nombre = firstName.text,
+                                            apellidos = lastName.text,
+                                            numeroLicencia = licencia.text,
+                                            aniosExperiencia = xp.text.toIntOrNull() ?: 0,
+                                            datosContacto = username.text,
+                                            especialidad = especialidad.text,
+                                            telefono = telefono.text,
+                                            departamentoCodigo = departamento,
+                                            unidadCodigo = unidad,
+                                            hospitalCodigo = Auth.hospital
+                                        )
+
+                                        if (medicoCreado != null) {
+                                          val usuarioCreado = Auth.crear_usuario(
+                                                username = username.text,
+                                                passwordP = password.text,
+                                                nombre = firstName.text,
+                                                apellido = lastName.text,
+                                                rol = newRole,
+                                                hospital = Auth.hospital
+                                            )
+                                            if (usuarioCreado != null)
+                                               AccountDAO.vincularMedicoCuenta(medico = medicoCreado,usuarioCreado.id)
+
+                                        } else {
+                                            throw Exception("No se pudo crear el médico")
+                                        }
+
+                                    } else {
+                                        Auth.crear_usuario(
+                                            username = username.text,
+                                            passwordP = password.text,
+                                            nombre = firstName.text,
+                                            apellido = lastName.text,
+                                            rol = newRole,
+                                            hospital = if (newHospital.isNotEmpty()) newHospital else null
+                                        )
+                                    }
                                     buttonState = ButtonState.Finished
+                                    ToastManager.showToast("Cuenta creada con éxito", ToastType.SUCCESS)
                                 } catch (e: Exception) {
-                                    ToastManager.showToast("Error al crear cuenta", ToastType.ERROR)
                                     buttonState = ButtonState.Idle
+                                    ToastManager.showToast("Error al crear cuenta: ${e.message}", ToastType.ERROR)
                                 }
                             }
                         },
@@ -208,38 +312,25 @@ fun RegisterScreen() {
                             containerColor = Color(0xef070000),
                             contentColor = Color.White
                         ),
-                        enabled = buttonState != ButtonState.Loading
+                        enabled = buttonState == ButtonState.Idle
                     ) {
-                        AnimatedContent(
-                            targetState = buttonState,
-                            transitionSpec = {
-                                fadeIn(animationSpec = tween(150, delayMillis = 150)) with
-                                        fadeOut(animationSpec = tween(150))
-                            }
-                        ) { state ->
-                            when (state) {
-                                ButtonState.Idle -> Text("Crear cuenta", fontSize = 18.sp)
-                                ButtonState.Loading -> CircularProgressIndicator(
-                                    modifier = Modifier.size(24.dp),
-                                    color = Color.White
-                                )
+                        when (buttonState) {
+                            ButtonState.Idle -> Text("Crear cuenta", fontSize = 18.sp)
+                            ButtonState.Loading -> CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = Color.White
+                            )
 
-                                ButtonState.Finished -> {
-                                    Text("¡Cuenta creada!", fontSize = 18.sp)
-                                    coroutineScope.launch {
-                                        delay(1000)
-                                        buttonState = ButtonState.Idle
-                                    }
-                                }
-                            }
+                            ButtonState.Finished -> Text("¡Cuenta creada!", fontSize = 18.sp)
                         }
                     }
+
+
                 }
             }
         }
     }
 }
-
 
 
 @Composable
@@ -292,6 +383,7 @@ fun CustomTextField(
         }
     }
 }
+
 @Composable
 fun CustomDropdown(
     items: List<String>,
@@ -367,8 +459,6 @@ fun CustomDropdown(
         }
     }
 }
-
-
 
 
 enum class ButtonState {

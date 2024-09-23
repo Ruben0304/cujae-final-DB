@@ -9,6 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import auth.Auth
 import vistas.colores.textColor
 import vistas.componentes.*
 import vistas.form.create.*
@@ -17,7 +18,7 @@ import vistas.form.edit.*
 
 @Composable
 fun CreateFormScreen() {
-    var selectedOption by remember { mutableStateOf("Consulta") }
+    var selectedOption by remember { mutableStateOf("Departamento") }
 
     Column(
         modifier = Modifier
@@ -48,7 +49,7 @@ fun CreateFormScreen() {
                         modifier = Modifier.padding(bottom = 24.dp)
                     )
                     CustomDropdown(
-                        options = listOf("Consulta", "Departamento", "Hospital", "Medico", "Paciente", "Turno", "Unidad"),
+                        options = if(Auth.rol == "admin_general") listOf("Departamento","Hospital", "Unidad") else listOf( "Hospital"),
                         selectedOption = selectedOption,
                         onOptionSelected = { selectedOption = it }
                     )
@@ -61,7 +62,6 @@ fun CreateFormScreen() {
                     "Consulta" -> CreateConsultaForm()
                     "Departamento" -> CreateDepartamentoForm()
                     "Hospital" -> CreateHospitalForm()
-                    "Medico" -> CreateMedicoForm()
                     "Paciente" -> CreatePacienteForm()
                     "Turno" -> CreateTurnoForm()
                     "Unidad" -> CreateUnidadForm()

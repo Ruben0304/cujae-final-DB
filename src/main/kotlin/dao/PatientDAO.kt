@@ -76,15 +76,11 @@ object PatientDAO {
         )
     }
 
-    suspend fun getPacientesPorHospital(hospitalCodigo: String): List<PatientTable> =
+    suspend fun getPacientes() =
         withContext(Dispatchers.IO) {
             try {
                 Supabase.coneccion.from("paciente")
-                    .select {
-                        filter {
-                            eq("hospital_codigo", hospitalCodigo)
-                        }
-                    }
+                    .select()
                     .decodeList<PatientTable>()
             } catch (e: Exception) {
                 println(e.message)
@@ -165,10 +161,10 @@ object PatientDAO {
 
     suspend fun insert(patient: PatientRequest) = withContext(Dispatchers.IO) {
         try {
-            Supabase.coneccion.from("paciente").insert(patient){
+            Supabase.coneccion.from("paciente").insert(patient) {
                 select()
             }.decodeSingle<PatientRequest>()
-        }catch (e: Exception){
+        } catch (e: Exception) {
             println(e.message)
             null
         }

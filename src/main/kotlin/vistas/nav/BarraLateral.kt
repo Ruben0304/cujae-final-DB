@@ -121,7 +121,7 @@ fun SideBar(navController: NavHostController, onLogout: () -> Unit) {
                         }
                         if (expandedMenu == "Personal") {
                             SideBarSubMenuItem("Médicos", navController) { navController.navigate("medicos") }
-                            SideBarSubMenuItem("Pacientes", navController) { navController.navigate("pacientesHospital") }
+                            SideBarSubMenuItem("Pacientes", navController) { navController.navigate("info_pacientes") }
                         }
 
                         SideBarMenuItemWithBubble(

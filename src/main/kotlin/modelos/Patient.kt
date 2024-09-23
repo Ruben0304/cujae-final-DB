@@ -17,7 +17,7 @@ data class Patient(
 
 @Serializable
 data class PatientTable(
-    @SerialName("ci") val numeroHistoriaClinica: String,
+    @SerialName("ci") val ci: String,
     @SerialName("nombre") val nombre: String,
     @SerialName("apellidos") val apellidos: String,
     @SerialName("fecha_nacimiento") val fechaNacimiento: String, // Puede ser String o LocalDate
@@ -32,6 +32,8 @@ data class PatientRequest(
     val fecha_nacimiento: LocalDate,
     val direccion: String
 )
+
+
 
 @Serializable
 data class PacienteParaComprobar(

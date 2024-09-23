@@ -1,6 +1,6 @@
 package dao
 
-import dao.DoctorDAO.CrearMedicoRequest
+
 import dao.PatientDAO.OPCSRequest
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.rpc

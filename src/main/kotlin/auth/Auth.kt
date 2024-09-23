@@ -98,6 +98,7 @@ object Auth {
                 userWithEmail
             } catch (e: Exception) {
                 println("Error al crear el usuario: ${e.message}")
+                null
             }
 
         }

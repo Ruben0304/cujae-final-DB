@@ -19,4 +19,23 @@ data class Doctor(
 )
 
 @Serializable
-data class DoctorId(val medico_id : String)
+data class DoctorId(val medico_id: String)
+
+@Serializable
+data class CrearMedicoRequest(
+    val p_codigo: String,
+    val p_nombre: String,
+    val p_apellidos: String,
+    val p_especialidad: String,
+    val p_numero_licencia: String,
+    val p_telefono: String,
+    val p_anios_experiencia: Int,
+    val p_datos_contacto: String,
+    val p_unidad_codigo: String? =null,
+    val p_departamento_codigo: String? = null,
+    val p_hospital_codigo: String
+)
+
+@Serializable
+data class UniqueCodeMedico(val generate_unique_medico_code: String)
+
