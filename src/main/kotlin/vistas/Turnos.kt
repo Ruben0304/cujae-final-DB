@@ -44,6 +44,9 @@ import modelos.Patient
 import modelos.Turno
 import vistas.colores.textColor
 import vistas.componentes.AceptCancelDialogManager
+import vistas.componentes.ToastHost
+import vistas.componentes.ToastManager
+import vistas.componentes.ToastType
 import vistas.nav.NavManager
 import kotlin.math.roundToInt
 
@@ -129,28 +132,23 @@ fun TurnoTable(unidad: String? = null, departamento: String? = null) {
                             itemsIndexed(turnos) { index, turno ->
                                 SwipeableTurnoRow(
                                     turno = turno,
-                                    onEdit = { /* Implementar lógica de edición */ },
+                                    onEdit = { ToastManager.showToast("Los turnos no son editables",ToastType.INFO) },
                                     onDelete = {
 
-                                        if (Auth.hospital != "")
-                                            AceptCancelDialogManager.showDialog(
-                                                "Seguro que deseas eliminar unidad ?",
-                                                {
-                                                    corrutineScope.launch {
-                                                        if (unidad != null) {
-                                                            if (departamento != null) {
-                                                                TurnoDAO.eliminar(
-                                                                    turno.numeroTurno,
-                                                                    unidad,
-                                                                    departamento,
-                                                                    Auth.hospital,
-                                                                    turno.medicoCodigo
-                                                                )
-                                                            }
-                                                        }
-                                                        NavManager.navController.navigate("turnos/${unidad}/${departamento}")
-                                                    }
-                                                })
+                                        corrutineScope.launch {
+                                            if (unidad != null) {
+                                                if (departamento != null) {
+                                                    TurnoDAO.eliminar(
+                                                        turno.numeroTurno,
+                                                        unidad,
+                                                        departamento,
+                                                        Auth.hospital,
+                                                        turno.medicoCodigo
+                                                    )
+                                                }
+                                            }
+                                            NavManager.navController.navigate("turnos/${unidad}/${departamento}")
+                                        }
 
 
                                     },
@@ -168,6 +166,7 @@ fun TurnoTable(unidad: String? = null, departamento: String? = null) {
             }
         }
     }
+    ToastHost()
 }
 
 @Composable
